@@ -1,16 +1,30 @@
 # output
 
+[![GoDoc Reference](https://godoc.org/github.com/majohn-r/output?status.svg)](https://pkg.go.dev/github.com/majohn-r/output)
+[![Go Report Card](https://goreportcard.com/badge/github.com/majohn-r/output)](https://goreportcard.com/report/github.com/majohn-r/output)
+[![GitHub release](https://img.shields.io/github/release/majohn-r/output.svg)](https://github.com/majohn-r/output/releases)
+
 - [output](#output)
+  - [Installing](#installing)
   - [Basic Usage](#basic-usage)
   - [Canonical Output](#canonical-output)
   - [Documentation](#documentation)
-  - [Submitting Changes](#submitting-changes)
+  - [Contributing](#contributing)
+    - [Git](#git)
     - [Code Quality](#code-quality)
     - [Commit message](#commit-message)
 
 **output** is a Go library that provides an easy way for command-line oriented
 programs to handle console and error writing and logging. It also provides a
 simple way to verify what is written to those channels.
+
+## Installing
+
+Execute this:
+
+```text
+go get github.com/majohn-r/output
+```
 
 ## Basic Usage
 
@@ -140,25 +154,30 @@ Depending on context, I use a mix of **WriteConsole** and
 
 ## Documentation
 
-Documentation beyond this file can be obtained by running
+Documentation beyond this file can be obtained by running `go doc -all`, or go
+here:
+[https://pkg.go.dev/github.com/majohn-r/output](https://pkg.go.dev/github.com/majohn-r/output)
 
-```text
-go doc -all .
-```
+## Contributing
 
-## Submitting Changes
+### Git
 
-More information to be provided - but at a minimum:
+1. Fork the repository (`https://github.com/majohn-r/output/fork`).
+2. Create a feature branch (`git checkout -b my-new-feature`).
+3. Commit your changes (`git commit -am 'Add some feature'`).
+4. Push to the branch (`git push origin my-new-feature`).
+5. Create a new Pull Request.
 
 ### Code Quality
 
 These are the minimum standards:
 
-1. There must be no lint issues - run **golint .** to verify.
-2. All unit tests must pass - run **go test -cover .** to verify.
-3. Code coverage must be at 100% - run **go test -coverprofile=coverage.out .;
-   go tool cover -html=coverage.out** to verify.
-4. The code must be correctly formatted - run **gofmt -e -l -s -w .** to verify.
+1. There must be no lint issues - run [`golint .`] to verify.
+2. All unit tests must pass - run [`go test -cover .`] to verify.
+3. Code coverage must be at 100% - run
+   [`go test -coverprofile=coverage.out .; go tool cover -html=coverage.out`]
+   to verify.
+4. The code must be correctly formatted - run [`gofmt -e -l -s -w .`] to verify.
 
 To recap - run these commands and make sure they show no problems:
 
@@ -171,10 +190,17 @@ gofmt -e -l -s -w .
 
 ### Commit message
 
-Reference an issue in the commit message:
+Reference an issue in the first line of the commit message:
 
 ```text
 [#1234] fix that nagging problem
 ```
 
-In the example above, 1234 is the issue number this commit reference.
+In the example above, **1234** is the issue number this commit reference.
+
+After the first line in the commit message, add a blank line, followed by
+relevant details.
+
+This library adheres to [Semantic Versioning](https://semver.org/) standards, so
+it will be very helpful if the details in the commit message make clear whether
+the changes require a minor or major release bump.
