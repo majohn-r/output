@@ -15,8 +15,9 @@
     - [Commit message](#commit-message)
 
 **output** is a Go library that provides an easy way for command-line oriented
-programs to handle console and error writing and logging. It also provides a
-simple way to verify what is written to those channels.
+programs to handle console writing, error writing, and logging (but agnostic as
+to the choice of logging framework). It also provides a simple way to verify
+what is written to those channels.
 
 ## Installing
 
@@ -28,10 +29,10 @@ go get github.com/majohn-r/output
 
 ## Basic Usage
 
-In main, create a Bus implementation and a Logger implementation. Here is an
-example that uses the
+In main, create a **Bus** implementation and a **Logger** implementation. Here
+is an example that uses the
 [https://github.com/sirupsen/logrus](https://github.com/sirupsen/logrus) library
-for the actual logging:
+to implement logging:
 
 ```go
 func main() {
@@ -43,8 +44,8 @@ func main() {
 }
 
 func runProgramLogic(o output.Bus, args []string) {
-    // any functions called should have the Bus passed in if they, or anything
-    // in their call tree, needs to write output or do any logging
+    // any functions called should have the Bus passed in if they, or any
+    // function they call, needs to write output or do any logging
     o.WriteConsole("hello world: %v\n", args)
 }
 
@@ -139,7 +140,7 @@ All use _fmt.Printf_ to process the format string and arguments, but the
    character in the first place. This alleviates problems where the last value
    in the field of arguments ends with an end-of-sentence punctuation character,
    and so does the format string; this phase also ensures that the message ends
-   with appropriate punctuation (_the default is a period_).
+   with appropriate punctuation.
 3. Capitalize the first character in the message.
 4. Append a newline.
 
@@ -172,7 +173,7 @@ here:
 
 These are the minimum standards:
 
-1. There must be no lint issues - run [`golint .`] to verify.
+1. There must be no lint issues - run [`gocritic -enableAll .`] to verify.
 2. All unit tests must pass - run [`go test -cover .`] to verify.
 3. Code coverage must be at 100% - run
    [`go test -coverprofile=coverage.out .; go tool cover -html=coverage.out`]
@@ -182,7 +183,7 @@ These are the minimum standards:
 To recap - run these commands and make sure they show no problems:
 
 ```text
-golint .
+gocritic -enableAll .
 go test -cover .
 go test -coverprofile=coverage.out .; go tool cover -html=coverage.out
 gofmt -e -l -s -w .

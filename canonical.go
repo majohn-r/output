@@ -18,7 +18,7 @@ func renderCanonical(s string) string {
 }
 
 func fixTerminalPunctuation(s string) string {
-	if len(s) == 0 {
+	if s == "" {
 		return s
 	}
 	lastChar := s[len(s)-1:]
@@ -39,7 +39,7 @@ func fixTerminalPunctuation(s string) string {
 			}
 		}
 	}
-	s = s + terminalPunctuation
+	s += terminalPunctuation
 	return s
 }
 
@@ -51,7 +51,7 @@ func stripTrailingNewlines(s string) string {
 }
 
 func capitalize(s string) string {
-	if len(s) == 0 {
+	if s == "" {
 		return s
 	}
 	r := []rune(s)
