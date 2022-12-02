@@ -155,8 +155,8 @@ Depending on context, I use a mix of **WriteConsole** and
 
 ## Documentation
 
-Documentation beyond this file can be obtained by running `go doc -all`, or go
-here:
+Documentation beyond this file can be obtained by running `./build.sh doc`, or
+go here:
 [https://pkg.go.dev/github.com/majohn-r/output](https://pkg.go.dev/github.com/majohn-r/output)
 
 ## Contributing
@@ -173,21 +173,10 @@ here:
 
 These are the minimum standards:
 
-1. There must be no lint issues - run [`gocritic -enableAll .`] to verify.
-2. All unit tests must pass - run [`go test -cover .`] to verify.
-3. Code coverage must be at 100% - run
-   [`go test -coverprofile=coverage.out .; go tool cover -html=coverage.out`]
-   to verify.
-4. The code must be correctly formatted - run [`gofmt -e -l -s -w .`] to verify.
-
-To recap - run these commands and make sure they show no problems:
-
-```text
-gocritic -enableAll .
-go test -cover .
-go test -coverprofile=coverage.out .; go tool cover -html=coverage.out
-gofmt -e -l -s -w .
-```
+1. There must be no lint issues - run [`./build.sh lint`] to verify.
+2. All unit tests must pass - run [`./build.sh tests`] to verify.
+3. Code coverage must be at 100% - run [`./build.sh coverage`] to verify.
+4. The code must be correctly formatted - run [`./build.sh format`] to verify.
 
 ### Commit message
 
