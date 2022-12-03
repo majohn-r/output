@@ -3,19 +3,33 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/goyek/goyek/v2"
 	"github.com/goyek/x/cmd"
 )
 
+const coverageFile = "coverage.out"
+
 var (
+	_ = goyek.Define(goyek.Task{
+		Name:  "clean",
+		Usage: "delete build products",
+		Action: func(a *goyek.A) {
+			os.Remove(filepath.Join("..", coverageFile))
+		},
+	})
+
 	_ = goyek.Define(goyek.Task{
 		Name:  "coverage",
 		Usage: "run unit tests and produce a coverage report",
 		Action: func(a *goyek.A) {
 			o := makeOptions(nil)
-			if cmd.Exec(a, "go test -coverprofile=coverage.out ./", o...) {
-				cmd.Exec(a, "go tool cover -html=coverage.out", o...)
+			cmdline := fmt.Sprintf("go test -coverprofile=%s ./", coverageFile)
+			if cmd.Exec(a, cmdline, o...) {
+				cmdline = fmt.Sprintf("go tool cover -html=%s", coverageFile)
+				cmd.Exec(a, cmdline, o...)
 			}
 		},
 	})
