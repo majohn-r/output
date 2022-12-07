@@ -2,7 +2,8 @@
 
 [![GoDoc Reference](https://godoc.org/github.com/majohn-r/output?status.svg)](https://pkg.go.dev/github.com/majohn-r/output)
 [![Go Report Card](https://goreportcard.com/badge/github.com/majohn-r/output)](https://goreportcard.com/report/github.com/majohn-r/output)
-[![GitHub release](https://img.shields.io/github/release/majohn-r/output.svg)](https://github.com/majohn-r/output/releases)
+[![Release](https://img.shields.io/github/release/majohn-r/output.svg)](https://github.com/majohn-r/output/releases)
+[![Code Coverage Report](https://codecov.io/github/majohn-r/output/branch/main/graph/badge.svg)](https://codecov.io/github/majohn-r/output)
 
 - [output](#output)
   - [Installing](#installing)
