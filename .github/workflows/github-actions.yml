@@ -3,26 +3,33 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - name: Check out source code
+        uses: actions/checkout@v3
+      - name: Fetch go
+        uses: actions/setup-go@v3
         with:
           go-version: 1.19.x
-      - run: go install -v github.com/go-critic/go-critic/cmd/gocritic@latest
-      - run: gocritic check -enableAll ./ > lint-issues.txt
-      - name: post lint issues
+      - name: Install linter
+        run: go install -v github.com/go-critic/go-critic/cmd/gocritic@latest
+      - name: Run linter
+        run: gocritic check -enableAll ./ > lint-issues.txt
+      - name: Post lint issues
         uses: actions/upload-artifact@v3
         with:
           name: lint results
           path: lint-issues.txt
-      - run: gofmt -e -l -s -w ./ > format-issues.txt
-      - name: post format issues
+      - name: Run format check
+        run: gofmt -e -l -s -w ./ > format-issues.txt
+      - name: Post format issues
         uses: actions/upload-artifact@v3
         with:
           name: format results
           path: format-issues.txt
-      - run: go test -cover ./ > test-results.txt
-      - name: post test results
-        uses: actions/upload-artifact@v3
-        with:
-          name: test results
-          path: test-results.txt
+      - name: Execute unit tests with code coverage
+        run: go test -coverprofile=coverage.txt -covermode-atomic
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        run: |
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          ./codecov
