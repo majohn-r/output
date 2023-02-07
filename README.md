@@ -7,7 +7,7 @@
 [![Release](https://img.shields.io/github/release/majohn-r/output.svg)](https://github.com/majohn-r/output/releases)
 [![Code Coverage Report](https://codecov.io/github/majohn-r/output/branch/main/graph/badge.svg)](https://codecov.io/github/majohn-r/output)
 [![Go Report Card](https://goreportcard.com/badge/github.com/majohn-r/output)](https://goreportcard.com/report/github.com/majohn-r/output)
-[![Build Status](https://img.shields.io/github/workflow/status/majohn-r/output/build)](https://github.com/majohn-r/output/actions?query=workflow%3Abuild+branch%3Amain)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/majohn-r/output/build.yml?branch=main)](https://github.com/majohn-r/output/actions?query=workflow%3Abuild+branch%3Amain)
 
 - [output](#output)
   - [Installing](#installing)
