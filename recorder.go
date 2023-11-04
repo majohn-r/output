@@ -92,11 +92,6 @@ func (r *Recorder) ErrorWriter() io.Writer {
 	return r.errorChannel
 }
 
-// LogWriter returns the internal logger.
-func (r *Recorder) LogWriter() Logger {
-	return r.logChannel
-}
-
 // WriteCanonicalError records data written as an error.
 func (r *Recorder) WriteCanonicalError(format string, a ...any) {
 	fmt.Fprint(r.errorChannel, canonicalFormat(format, a...))

@@ -23,7 +23,6 @@ type (
 		WriteError(string, ...any)
 		ConsoleWriter() io.Writer
 		ErrorWriter() io.Writer
-		LogWriter() Logger
 	}
 
 	// Logger defines a set of functions for writing to a log at various log
@@ -106,11 +105,6 @@ func (b *bus) ConsoleWriter() io.Writer {
 // ErrorWriter returns a writer for error output.
 func (b *bus) ErrorWriter() io.Writer {
 	return b.errorChannel
-}
-
-// LogWriter returns a Logger.
-func (b *bus) LogWriter() Logger {
-	return b.logChannel
 }
 
 // WriteCanonicalError writes error output in a canonical format.

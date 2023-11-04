@@ -14,13 +14,6 @@ func TestNewNilBus(t *testing.T) {
 			o.WriteConsole("%s %d %t", "foo", 42, true)
 			o.WriteCanonicalError("%s %d %t", "foo", 42, true)
 			o.WriteError("%s %d %t", "foo", 42, true)
-			o.LogWriter().Fatal("fatal message", map[string]any{"field1": "value"})
-			o.LogWriter().Panic("panic message", map[string]any{"field1": "value"})
-			o.LogWriter().Error("error message", map[string]any{"field1": "value"})
-			o.LogWriter().Warning("warning message", map[string]any{"field1": "value"})
-			o.LogWriter().Info("info message", map[string]any{"field1": "value"})
-			o.LogWriter().Debug("debug message", map[string]any{"field1": "value"})
-			o.LogWriter().Trace("trace message", map[string]any{"field1": "value"})
 		})
 	}
 }

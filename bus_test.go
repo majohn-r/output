@@ -15,14 +15,12 @@ func TestNewDefaultBus(t *testing.T) {
 		want              Bus
 		wantConsoleWriter io.Writer
 		wantErrorWriter   io.Writer
-		wantLogWriter     Logger
 	}{
 		{
 			name:              "normal",
 			want:              NewCustomBus(os.Stdout, os.Stderr, NilLogger{}),
 			wantConsoleWriter: os.Stdout,
 			wantErrorWriter:   os.Stderr,
-			wantLogWriter:     NilLogger{},
 		},
 	}
 	for _, tt := range tests {
@@ -36,9 +34,6 @@ func TestNewDefaultBus(t *testing.T) {
 			}
 			if w := got.ErrorWriter(); w != tt.wantErrorWriter {
 				t.Errorf("%s got error writer %v, want %v", fnName, w, tt.wantErrorWriter)
-			}
-			if w := got.LogWriter(); w != tt.wantLogWriter {
-				t.Errorf("%s got log writer %v, want %v", fnName, w, tt.wantLogWriter)
 			}
 		})
 	}

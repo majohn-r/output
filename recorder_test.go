@@ -62,9 +62,6 @@ func TestNewRecorder(t *testing.T) {
 			if o.ErrorWriter() == nil {
 				t.Errorf("%s: error writer is nil", fnName)
 			}
-			if o.LogWriter() == nil {
-				t.Errorf("%s: log writer is nil", fnName)
-			}
 			if tt.canonicalWrites {
 				o.WriteCanonicalConsole(tt.consoleFmt, tt.consoleArgs...)
 				o.WriteCanonicalError(tt.errorFmt, tt.errorArgs...)
@@ -72,7 +69,7 @@ func TestNewRecorder(t *testing.T) {
 				o.WriteConsole(tt.consoleFmt, tt.consoleArgs...)
 				o.WriteError(tt.errorFmt, tt.errorArgs...)
 			}
-			o.LogWriter().Error(tt.logMessage, tt.logArgs)
+			o.Log(Error, tt.logMessage, tt.logArgs)
 			if issues, ok := o.Verify(tt.WantedRecording); !ok {
 				for _, issue := range issues {
 					t.Errorf("%s %s", fnName, issue)
