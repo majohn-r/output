@@ -1,6 +1,8 @@
 package output
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestNewNilBus(t *testing.T) {
 	tests := []struct {
@@ -59,6 +61,28 @@ func TestNilWriter_Write(t *testing.T) {
 			if gotN != tt.wantN {
 				t.Errorf("%s = %v, want %v", fnName, gotN, tt.wantN)
 			}
+		})
+	}
+}
+
+func TestNilLogger_All(t *testing.T) {
+	type args struct {
+		msg    string
+		fields map[string]any
+	}
+	tests := map[string]struct {
+		nl   NilLogger
+		args args
+	}{"default": {nl: NilLogger{}, args: args{}}}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			tt.nl.Debug(tt.args.msg, tt.args.fields)
+			tt.nl.Error(tt.args.msg, tt.args.fields)
+			tt.nl.Fatal(tt.args.msg, tt.args.fields)
+			tt.nl.Info(tt.args.msg, tt.args.fields)
+			tt.nl.Panic(tt.args.msg, tt.args.fields)
+			tt.nl.Trace(tt.args.msg, tt.args.fields)
+			tt.nl.Warning(tt.args.msg, tt.args.fields)
 		})
 	}
 }
