@@ -10,21 +10,19 @@ import (
 
 func TestNewDefaultBus(t *testing.T) {
 	fnName := "NewDefaultBus()"
-	tests := []struct {
-		name              string
+	tests := map[string]struct {
 		want              Bus
 		wantConsoleWriter io.Writer
 		wantErrorWriter   io.Writer
 	}{
-		{
-			name:              "normal",
+		"normal": {
 			want:              NewCustomBus(os.Stdout, os.Stderr, NilLogger{}),
 			wantConsoleWriter: os.Stdout,
 			wantErrorWriter:   os.Stderr,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
 			got := NewDefaultBus(NilLogger{})
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("%s = %v, want %v", fnName, got, tt.want)
@@ -310,6 +308,93 @@ func Test_bus_WriteConsole(t *testing.T) {
 			o.WriteConsole(tt.args.format, tt.args.a...)
 			if got := tt.w.String(); got != tt.want {
 				t.Errorf("%s: got %q want %q", fnName, got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_bus_IsConsoleTTY(t *testing.T) {
+	tests := map[string]struct {
+		b    Bus
+		want bool
+	}{
+		"simple": {b: NewDefaultBus(NewRecordingLogger()), want: false},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			if got := tt.b.IsConsoleTTY(); got != tt.want {
+				t.Errorf("bus.IsConsoleTTY() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_bus_IsErrorTTY(t *testing.T) {
+	tests := map[string]struct {
+		b    Bus
+		want bool
+	}{
+		"simple": {b: NewDefaultBus(NewRecordingLogger()), want: false},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			if got := tt.b.IsErrorTTY(); got != tt.want {
+				t.Errorf("bus.IsErrorTTY() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_isTTY(t *testing.T) {
+	oldIsTerminal := isTerminal
+	oldIsCygwinTerminal := isCygwinTerminal
+	defer func() {
+		isTerminal = oldIsTerminal
+		isCygwinTerminal = oldIsCygwinTerminal
+	}()
+	tests := map[string]struct {
+		terminalFunc       func(uintptr) bool
+		cygwinTerminalFunc func(uintptr) bool
+		w                  io.Writer
+		want               bool
+	}{
+		"non-file": {w: &bytes.Buffer{}},
+		"non-tty": {
+			terminalFunc: func(_ uintptr) bool {
+				return false
+			},
+			cygwinTerminalFunc: func(_ uintptr) bool {
+				return false
+			},
+			w: os.Stdout,
+		},
+		"plain terminal": {
+			terminalFunc: func(_ uintptr) bool {
+				return true
+			},
+			cygwinTerminalFunc: func(_ uintptr) bool {
+				return false
+			},
+			w:    os.Stdout,
+			want: true,
+		},
+		"cygwin terminal": {
+			terminalFunc: func(_ uintptr) bool {
+				return false
+			},
+			cygwinTerminalFunc: func(_ uintptr) bool {
+				return true
+			},
+			w:    os.Stdout,
+			want: true,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			isTerminal = tt.terminalFunc
+			isCygwinTerminal = tt.cygwinTerminalFunc
+			if got := isTTY(tt.w); got != tt.want {
+				t.Errorf("isTTY() = %t, want %t", got, tt.want)
 			}
 		})
 	}

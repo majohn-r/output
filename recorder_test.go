@@ -445,3 +445,31 @@ func TestRecordingLogger_Fatal(t *testing.T) {
 		})
 	}
 }
+
+func TestRecorder_IsConsoleTTY(t *testing.T) {
+	tests := map[string]struct {
+		r    *Recorder
+		want bool
+	}{"simple": {r: NewRecorder(), want: false}}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			if got := tt.r.IsConsoleTTY(); got != tt.want {
+				t.Errorf("Recorder.IsConsoleTTY() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestRecorder_IsErrorTTY(t *testing.T) {
+	tests := map[string]struct {
+		r    *Recorder
+		want bool
+	}{"simple": {r: NewRecorder(), want: false}}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			if got := tt.r.IsErrorTTY(); got != tt.want {
+				t.Errorf("Recorder.IsErrorTTY() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

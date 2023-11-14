@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/mattn/go-isatty"
 )
 
 type (
@@ -23,6 +25,8 @@ type (
 		WriteError(string, ...any)
 		ConsoleWriter() io.Writer
 		ErrorWriter() io.Writer
+		IsConsoleTTY() bool
+		IsErrorTTY() bool
 	}
 
 	// Logger defines a set of functions for writing to a log at various log
@@ -42,6 +46,8 @@ type (
 		errorChannel   io.Writer
 		logChannel     Logger
 		performWrites  bool
+		consoleTTY     bool
+		errorTTY       bool
 	}
 )
 
@@ -62,6 +68,20 @@ func NewDefaultBus(l Logger) Bus {
 	return NewCustomBus(os.Stdout, os.Stderr, l)
 }
 
+// vars so testing can replace
+var (
+	isTerminal       = isatty.IsTerminal
+	isCygwinTerminal = isatty.IsCygwinTerminal
+)
+
+func isTTY(w io.Writer) (b bool) {
+	if f, ok := w.(*os.File); ok {
+		fd := f.Fd()
+		b = isTerminal(fd) || isCygwinTerminal(fd)
+	}
+	return
+}
+
 // NewCustomBus returns an implementation of Bus that lets the caller specify
 // the console and error writers and the Logger.
 func NewCustomBus(c, e io.Writer, l Logger) Bus {
@@ -70,6 +90,8 @@ func NewCustomBus(c, e io.Writer, l Logger) Bus {
 		errorChannel:   e,
 		logChannel:     l,
 		performWrites:  true,
+		consoleTTY:     isTTY(c),
+		errorTTY:       isTTY(e),
 	}
 }
 
@@ -133,4 +155,14 @@ func (b *bus) WriteConsole(format string, a ...any) {
 	if b.performWrites {
 		fmt.Fprintf(b.consoleChannel, format, a...)
 	}
+}
+
+// IsConsoleTTY returns whether the console writer is a TTY
+func (b *bus) IsConsoleTTY() bool {
+	return b.consoleTTY
+}
+
+// IsErrorTTY returns whether the error writer is a TTY
+func (b *bus) IsErrorTTY() bool {
+	return b.errorTTY
 }

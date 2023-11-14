@@ -127,6 +127,16 @@ func (r *Recorder) LogOutput() string {
 	return r.logChannel.writer.String()
 }
 
+// IsConsoleTTY returns whether the console writer is a TTY
+func (r *Recorder) IsConsoleTTY() bool {
+	return false
+}
+
+// IsErrorTTY returns whether the error writer is a TTY
+func (r *Recorder) IsErrorTTY() bool {
+	return false
+}
+
 // Verify verifies the recorded output against the expected output and returns
 // any differences found.
 func (r *Recorder) Verify(w WantedRecording) (issues []string, ok bool) {
