@@ -28,13 +28,13 @@ func fixTerminalPunctuation(s string) string {
 	} else {
 		// remove the punctuation at the end
 		s = s[:len(s)-1]
-		if len(s) > 0 {
+		if s != "" {
 			lastChar = s[len(s)-1:]
 		}
 		// look for more and remove them too
-		for len(s) > 0 && isSentenceTerminatingPunctuation(lastChar) {
+		for s != "" && isSentenceTerminatingPunctuation(lastChar) {
 			s = s[:len(s)-1]
-			if len(s) > 0 {
+			if s != "" {
 				lastChar = s[len(s)-1:]
 			}
 		}
@@ -44,7 +44,7 @@ func fixTerminalPunctuation(s string) string {
 }
 
 func stripTrailingNewlines(s string) string {
-	for len(s) > 0 && s[len(s)-1:] == "\n" {
+	for s != "" && s[len(s)-1:] == "\n" {
 		s = s[:len(s)-1]
 	}
 	return s
