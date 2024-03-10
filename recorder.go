@@ -197,7 +197,7 @@ func (rl *RecordingLogger) Fatal(msg string, fields map[string]any) {
 }
 
 func (rl *RecordingLogger) log(level, msg string, fields map[string]any) {
-	var parts []string
+	parts := make([]string, 0, len(fields))
 	for k, v := range fields {
 		parts = append(parts, fmt.Sprintf("%s='%v'", k, v))
 	}
