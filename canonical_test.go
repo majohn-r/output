@@ -1,6 +1,8 @@
 package output
 
-import "testing"
+import (
+	"testing"
+)
 
 func Test_canonicalFormat(t *testing.T) {
 	type args struct {
@@ -272,6 +274,46 @@ func Test_isSentenceTerminatingPunctuation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := isSentenceTerminatingPunctuation(tt.args.s); got != tt.want {
 				t.Errorf("isSentenceTerminatingPunctuation() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_lastCharacter(t *testing.T) {
+	tests := map[string]struct {
+		s            string
+		wantResultS  string
+		wantLastChar string
+	}{
+		"empty": {
+			s:            "",
+			wantResultS:  "",
+			wantLastChar: "",
+		},
+		"nearly empty": {
+			s:            "a",
+			wantResultS:  "",
+			wantLastChar: "",
+		},
+		"few": {
+			s:            "ab",
+			wantResultS:  "a",
+			wantLastChar: "a",
+		},
+		"lots": {
+			s:            "gjdfhgdsfhgiudsfhgiuldshgiu",
+			wantResultS:  "gjdfhgdsfhgiudsfhgiuldshgi",
+			wantLastChar: "i",
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			gotResultS, gotLastChar := lastCharacter(tt.s)
+			if gotResultS != tt.wantResultS {
+				t.Errorf("lastCharacter() gotResultS = %v, want %v", gotResultS, tt.wantResultS)
+			}
+			if gotLastChar != tt.wantLastChar {
+				t.Errorf("lastCharacter() gotLastChar = %v, want %v", gotLastChar, tt.wantLastChar)
 			}
 		})
 	}

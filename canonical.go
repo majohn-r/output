@@ -22,25 +22,28 @@ func fixTerminalPunctuation(s string) string {
 		return s
 	}
 	lastChar := s[len(s)-1:]
-	terminalPunctuation := lastChar
-	if !isSentenceTerminatingPunctuation(lastChar) {
-		terminalPunctuation = "."
-	} else {
+	terminalPunctuation := "."
+	if isSentenceTerminatingPunctuation(lastChar) {
+		terminalPunctuation = lastChar
 		// remove the punctuation at the end
-		s = s[:len(s)-1]
-		if s != "" {
-			lastChar = s[len(s)-1:]
-		}
+		s, lastChar = lastCharacter(s)
 		// look for more and remove them too
 		for s != "" && isSentenceTerminatingPunctuation(lastChar) {
-			s = s[:len(s)-1]
-			if s != "" {
-				lastChar = s[len(s)-1:]
-			}
+			s, lastChar = lastCharacter(s)
 		}
 	}
 	s += terminalPunctuation
 	return s
+}
+
+func lastCharacter(s string) (resultS, lastChar string) {
+	if s != "" {
+		resultS = s[:len(s)-1]
+		if resultS != "" {
+			lastChar = resultS[len(resultS)-1:]
+		}
+	}
+	return
 }
 
 func stripTrailingNewlines(s string) string {
