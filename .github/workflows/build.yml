@@ -11,10 +11,12 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: 1.22.2
+      - name: Get dependencies
+        run: go get -u ./...
       - name: Install linter
         run: go install -v github.com/go-critic/go-critic/cmd/gocritic@latest
       - name: Run linter
-        run: gocritic check -enableAll ./ > lint-issues.txt
+        run: gocritic check -enableAll ./... > lint-issues.txt
       - name: Post lint issues
         uses: actions/upload-artifact@v3
         with:
@@ -30,18 +32,20 @@ jobs:
           name: nilaway results
           path: nilaway-issues.txt
       - name: Run format check
-        run: gofmt -e -l -s -w ./ > format-issues.txt
+        run: gofmt -d -e -l ./ > format-issues.txt
       - name: Post format issues
         uses: actions/upload-artifact@v3
         with:
           name: format results
           path: format-issues.txt
+      - name: Get vulnerability check program
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
       - name: Run vulnerability check
         uses: golang/govulncheck-action@v1
         with:
           go-version-input: 1.22.2
       - name: Execute unit tests with code coverage
-        run: go test -coverprofile=coverage.out -covermode=atomic
+        run: go test -coverprofile=coverage.out -covermode=atomic ./...
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
