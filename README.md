@@ -22,7 +22,7 @@
 **output** is a Go library that provides an easy way for command-line oriented
 programs to handle console writing, error writing, and logging (but agnostic as
 to the choice of logging framework). It also provides a simple way to verify
-what is written to those channels.
+what is written to those writers.
 
 ## Installing
 

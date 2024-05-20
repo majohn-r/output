@@ -42,12 +42,12 @@ type (
 	}
 
 	bus struct {
-		consoleChannel io.Writer
-		errorChannel   io.Writer
-		logChannel     Logger
-		performWrites  bool
-		consoleTTY     bool
-		errorTTY       bool
+		consoleWriter io.Writer
+		errorWriter   io.Writer
+		logger        Logger
+		performWrites bool
+		consoleTTY    bool
+		errorTTY      bool
 	}
 )
 
@@ -86,12 +86,12 @@ func isTTY(w io.Writer) (b bool) {
 // the console and error writers and the Logger.
 func NewCustomBus(c, e io.Writer, l Logger) Bus {
 	return &bus{
-		consoleChannel: c,
-		errorChannel:   e,
-		logChannel:     l,
-		performWrites:  true,
-		consoleTTY:     isTTY(c),
-		errorTTY:       isTTY(e),
+		consoleWriter: c,
+		errorWriter:   e,
+		logger:        l,
+		performWrites: true,
+		consoleTTY:    isTTY(c),
+		errorTTY:      isTTY(e),
 	}
 }
 
@@ -100,19 +100,19 @@ func (b *bus) Log(l Level, msg string, args map[string]any) {
 	if b.performWrites {
 		switch l {
 		case Trace:
-			b.logChannel.Trace(msg, args)
+			b.logger.Trace(msg, args)
 		case Debug:
-			b.logChannel.Debug(msg, args)
+			b.logger.Debug(msg, args)
 		case Info:
-			b.logChannel.Info(msg, args)
+			b.logger.Info(msg, args)
 		case Warning:
-			b.logChannel.Warning(msg, args)
+			b.logger.Warning(msg, args)
 		case Error:
-			b.logChannel.Error(msg, args)
+			b.logger.Error(msg, args)
 		case Panic:
-			b.logChannel.Panic(msg, args)
+			b.logger.Panic(msg, args)
 		case Fatal:
-			b.logChannel.Fatal(msg, args)
+			b.logger.Fatal(msg, args)
 		default:
 			b.WriteCanonicalError("programming error: call to bus.Log() with invalid level value %d; message: '%s', args: '%v", l, msg, args)
 		}
@@ -121,39 +121,39 @@ func (b *bus) Log(l Level, msg string, args map[string]any) {
 
 // ConsoleWriter returns a writer for console output.
 func (b *bus) ConsoleWriter() io.Writer {
-	return b.consoleChannel
+	return b.consoleWriter
 }
 
 // ErrorWriter returns a writer for error output.
 func (b *bus) ErrorWriter() io.Writer {
-	return b.errorChannel
+	return b.errorWriter
 }
 
 // WriteCanonicalError writes error output in a canonical format.
 func (b *bus) WriteCanonicalError(format string, a ...any) {
 	if b.performWrites {
-		fmt.Fprint(b.errorChannel, canonicalFormat(format, a...))
+		fmt.Fprint(b.errorWriter, canonicalFormat(format, a...))
 	}
 }
 
 // WriteError writes unedited error output.
 func (b *bus) WriteError(format string, a ...any) {
 	if b.performWrites {
-		fmt.Fprintf(b.errorChannel, format, a...)
+		fmt.Fprintf(b.errorWriter, format, a...)
 	}
 }
 
 // WriteCanonicalConsole writes output to a console in a canonical format.
 func (b *bus) WriteCanonicalConsole(format string, a ...any) {
 	if b.performWrites {
-		fmt.Fprint(b.consoleChannel, canonicalFormat(format, a...))
+		fmt.Fprint(b.consoleWriter, canonicalFormat(format, a...))
 	}
 }
 
 // WriteConsole writes output to a console.
 func (b *bus) WriteConsole(format string, a ...any) {
 	if b.performWrites {
-		fmt.Fprintf(b.consoleChannel, format, a...)
+		fmt.Fprintf(b.consoleWriter, format, a...)
 	}
 }
 

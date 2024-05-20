@@ -70,7 +70,7 @@ func TestNewRecorder(t *testing.T) {
 				o.WriteError(tt.errorFmt, tt.errorArgs...)
 			}
 			o.Log(Error, tt.logMessage, tt.logArgs)
-			if issues, ok := o.Verify(tt.WantedRecording); !ok {
+			if issues, verified := o.Verify(tt.WantedRecording); !verified {
 				for _, issue := range issues {
 					t.Errorf("%s %s", fnName, issue)
 				}
@@ -88,10 +88,10 @@ func TestRecorder_Verify(t *testing.T) {
 	tests := []struct {
 		name string
 		args
-		wantIssues []string
-		wantOk     bool
+		wantIssues   []string
+		wantVerified bool
 	}{
-		{name: "normal", args: args{o: NewRecorder(), w: WantedRecording{}}, wantOk: true},
+		{name: "normal", args: args{o: NewRecorder(), w: WantedRecording{}}, wantVerified: true},
 		{
 			name: "errors",
 			args: args{
@@ -111,12 +111,12 @@ func TestRecorder_Verify(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotIssues, gotOk := tt.args.o.Verify(tt.args.w)
+			gotIssues, gotVerified := tt.args.o.Verify(tt.args.w)
 			if !reflect.DeepEqual(gotIssues, tt.wantIssues) {
 				t.Errorf("%s gotIssues = %v, want %v", fnName, gotIssues, tt.wantIssues)
 			}
-			if gotOk != tt.wantOk {
-				t.Errorf("%s gotOk = %v, want %v", fnName, gotOk, tt.wantOk)
+			if gotVerified != tt.wantVerified {
+				t.Errorf("%s gotOk = %v, want %v", fnName, gotVerified, tt.wantVerified)
 			}
 		})
 	}

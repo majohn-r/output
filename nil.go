@@ -16,10 +16,10 @@ type (
 func NewNilBus() Bus {
 	nw := NilWriter{}
 	return &bus{
-		consoleChannel: nw,
-		errorChannel:   nw,
-		logChannel:     NilLogger{},
-		performWrites:  false,
+		consoleWriter: nw,
+		errorWriter:   nw,
+		logger:        NilLogger{},
+		performWrites: false,
 	}
 }
 
@@ -52,6 +52,6 @@ func (nl NilLogger) Fatal(msg string, fields map[string]any) {
 }
 
 // Write does nothing except return the expected values
-func (nw NilWriter) Write(p []byte) (n int, err error) {
+func (nw NilWriter) Write(p []byte) (int, error) {
 	return len(p), nil
 }

@@ -184,7 +184,7 @@ func Test_bus_WriteCanonicalError(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			w := &bytes.Buffer{}
-			o := &bus{errorChannel: w, performWrites: true}
+			o := &bus{errorWriter: w, performWrites: true}
 			o.WriteCanonicalError(tt.args.format, tt.args.a...)
 			if got := w.String(); got != tt.want {
 				t.Errorf("%s got %q want %q", fnName, got, tt.want)
@@ -238,7 +238,7 @@ func Test_bus_WriteError(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			w := &bytes.Buffer{}
-			o := &bus{errorChannel: w, performWrites: true}
+			o := &bus{errorWriter: w, performWrites: true}
 			o.WriteError(tt.args.format, tt.args.a...)
 			if got := w.String(); got != tt.want {
 				t.Errorf("%s got %q want %q", fnName, got, tt.want)
@@ -271,7 +271,7 @@ func Test_bus_WriteCanonicalConsole(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			o := &bus{consoleChannel: tt.w, performWrites: true}
+			o := &bus{consoleWriter: tt.w, performWrites: true}
 			o.WriteCanonicalConsole(tt.args.format, tt.args.a...)
 			if got := tt.w.String(); got != tt.want {
 				t.Errorf("%s: got %q want %q", fnName, got, tt.want)
@@ -304,7 +304,7 @@ func Test_bus_WriteConsole(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			o := &bus{consoleChannel: tt.w, performWrites: true}
+			o := &bus{consoleWriter: tt.w, performWrites: true}
 			o.WriteConsole(tt.args.format, tt.args.a...)
 			if got := tt.w.String(); got != tt.want {
 				t.Errorf("%s: got %q want %q", fnName, got, tt.want)
