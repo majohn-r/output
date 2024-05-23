@@ -2,6 +2,7 @@ package output
 
 import (
 	"bytes"
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -88,8 +89,8 @@ func TestRecorder_Verify(t *testing.T) {
 	tests := []struct {
 		name string
 		args
-		wantIssues   []string
-		wantVerified bool
+		wantDifferences []string
+		wantVerified    bool
 	}{
 		{name: "normal", args: args{o: NewRecorder(), w: WantedRecording{}}, wantVerified: true},
 		{
@@ -102,7 +103,7 @@ func TestRecorder_Verify(t *testing.T) {
 					Log:     "unexpected log output",
 				},
 			},
-			wantIssues: []string{
+			wantDifferences: []string{
 				"console output = \"\", want \"unexpected console output\"",
 				"error output = \"\", want \"unexpected error output\"",
 				"log output = \"\", want \"unexpected log output\"",
@@ -111,15 +112,40 @@ func TestRecorder_Verify(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotIssues, gotVerified := tt.args.o.Verify(tt.args.w)
-			if !reflect.DeepEqual(gotIssues, tt.wantIssues) {
-				t.Errorf("%s gotIssues = %v, want %v", fnName, gotIssues, tt.wantIssues)
+			gotDifferences, gotVerified := tt.args.o.Verify(tt.args.w)
+			if !reflect.DeepEqual(gotDifferences, tt.wantDifferences) {
+				t.Errorf("%s gotIssues = %v, want %v", fnName, gotDifferences, tt.wantDifferences)
 			}
 			if gotVerified != tt.wantVerified {
-				t.Errorf("%s gotOk = %v, want %v", fnName, gotVerified, tt.wantVerified)
+				t.Errorf("%s gotVerified = %v, want %v", fnName, gotVerified, tt.wantVerified)
+			}
+			vr := newVerificationReporter()
+			tt.args.o.Report(vr, fnName, tt.args.w)
+			for i, line := range vr.buffer {
+				wanted := fnName + " " + tt.wantDifferences[i]
+				if line != wanted {
+					t.Errorf("%s recorded %q wanted %q", fnName, line, wanted)
+				}
 			}
 		})
+		tType := reflect.TypeOf(t)
+		interfaceType := reflect.TypeOf((*TestingReporter)(nil)).Elem()
+		if !tType.Implements(interfaceType) {
+			t.Errorf("*testing.T does not implement TestingReporter")
+		}
 	}
+}
+
+type verificationReporter struct {
+	buffer []string
+}
+
+func newVerificationReporter() *verificationReporter {
+	return &verificationReporter{buffer: []string{}}
+}
+
+func (vr *verificationReporter) Errorf(format string, data ...any) {
+	vr.buffer = append(vr.buffer, fmt.Sprintf(format, data...))
 }
 
 func TestRecorder_Log(t *testing.T) {

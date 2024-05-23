@@ -139,21 +139,38 @@ func (r *Recorder) IsErrorTTY() bool {
 
 // Verify verifies the recorded output against the expected output and returns
 // any differences found.
-func (r *Recorder) Verify(w WantedRecording) (issues []string, verified bool) {
+func (r *Recorder) Verify(w WantedRecording) (differences []string, verified bool) {
 	verified = true
 	if got := r.ConsoleOutput(); got != w.Console {
-		issues = append(issues, fmt.Sprintf("console output = %q, want %q", got, w.Console))
+		differences = append(differences, fmt.Sprintf("console output = %q, want %q", got, w.Console))
 		verified = false
 	}
 	if got := r.ErrorOutput(); got != w.Error {
-		issues = append(issues, fmt.Sprintf("error output = %q, want %q", got, w.Error))
+		differences = append(differences, fmt.Sprintf("error output = %q, want %q", got, w.Error))
 		verified = false
 	}
 	if got := r.LogOutput(); got != w.Log {
-		issues = append(issues, fmt.Sprintf("log output = %q, want %q", got, w.Log))
+		differences = append(differences, fmt.Sprintf("log output = %q, want %q", got, w.Log))
 		verified = false
 	}
 	return
+}
+
+// TestingReporter is an interface that requires the one *testing.T function
+// that we care about: Errorf
+type TestingReporter interface {
+	Errorf(string, ...any)
+}
+
+// Report handles the common use case for using a Recorder: detecting whether
+// any differences were recorded, and reporting them if there were any
+// differences.
+func (r *Recorder) Report(t TestingReporter, header string, w WantedRecording) {
+	if differences, verified := r.Verify(w); !verified {
+		for _, difference := range differences {
+			t.Errorf("%s %s", header, difference)
+		}
+	}
 }
 
 // NewRecordingLogger returns a recording implementation of Logger.
