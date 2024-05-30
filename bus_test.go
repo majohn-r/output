@@ -253,25 +253,34 @@ func Test_bus_WriteCanonicalConsole(t *testing.T) {
 		format string
 		a      []any
 	}
-	tests := []struct {
-		name string
-		w    *bytes.Buffer
+	tests := map[string]struct {
+		w   *bytes.Buffer
+		tab uint8
 		args
 		want string
 	}{
-		{
-			name: "strict rules",
-			w:    &bytes.Buffer{},
+		"strict rules": {
+			w:   &bytes.Buffer{},
+			tab: 0,
 			args: args{
 				format: "test %s...\n\n",
 				a:      []any{"foo."},
 			},
 			want: "Test foo.\n",
 		},
+		"strict rules with tab": {
+			w:   &bytes.Buffer{},
+			tab: 10,
+			args: args{
+				format: "test %s...\n\n",
+				a:      []any{"foo."},
+			},
+			want: "          Test foo.\n",
+		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			o := &bus{consoleWriter: tt.w, performWrites: true}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			o := &bus{consoleWriter: tt.w, performWrites: true, tab: tt.tab}
 			o.WriteCanonicalConsole(tt.args.format, tt.args.a...)
 			if got := tt.w.String(); got != tt.want {
 				t.Errorf("%s: got %q want %q", fnName, got, tt.want)
@@ -286,25 +295,34 @@ func Test_bus_WriteConsole(t *testing.T) {
 		format string
 		a      []any
 	}
-	tests := []struct {
-		name string
-		w    *bytes.Buffer
+	tests := map[string]struct {
+		w   *bytes.Buffer
+		tab uint8
 		args
 		want string
 	}{
-		{
-			name: "lax rules",
-			w:    &bytes.Buffer{},
+		"lax rules": {
+			w:   &bytes.Buffer{},
+			tab: 0,
 			args: args{
 				format: "test %s...\n\n",
 				a:      []any{"foo."},
 			},
 			want: "test foo....\n\n",
 		},
+		"lax rules with non-zero tab": {
+			w:   &bytes.Buffer{},
+			tab: 5,
+			args: args{
+				format: "test %s...\n\n",
+				a:      []any{"foo."},
+			},
+			want: "     test foo....\n\n",
+		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			o := &bus{consoleWriter: tt.w, performWrites: true}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			o := &bus{consoleWriter: tt.w, performWrites: true, tab: tt.tab}
 			o.WriteConsole(tt.args.format, tt.args.a...)
 			if got := tt.w.String(); got != tt.want {
 				t.Errorf("%s: got %q want %q", fnName, got, tt.want)
@@ -395,6 +413,47 @@ func Test_isTTY(t *testing.T) {
 			isCygwinTerminal = tt.cygwinTerminalFunc
 			if got := isTTY(tt.w); got != tt.want {
 				t.Errorf("isTTY() = %t, want %t", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_bus_IncrementTab(t *testing.T) {
+	tests := map[string]struct {
+		initialTab uint8
+		t          uint8
+		want       uint8
+	}{
+		"typical":       {initialTab: 0, t: 2, want: 2},
+		"overflow":      {initialTab: 64, t: 192, want: 64},
+		"near-overflow": {initialTab: 64, t: 191, want: 255},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			b := &bus{tab: tt.initialTab}
+			b.IncrementTab(tt.t)
+			if got := b.Tab(); got != tt.want {
+				t.Errorf("bus.IncrementTab got %d want %d", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_bus_DecrementTab(t *testing.T) {
+	tests := map[string]struct {
+		initialTab uint8
+		t          uint8
+		want       uint8
+	}{
+		"typical":   {initialTab: 2, t: 2, want: 0},
+		"underflow": {initialTab: 2, t: 3, want: 2},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			b := &bus{tab: tt.initialTab}
+			b.DecrementTab(tt.t)
+			if got := b.Tab(); got != tt.want {
+				t.Errorf("bus.DecrementTab got %d want %d", got, tt.want)
 			}
 		})
 	}

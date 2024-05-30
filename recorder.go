@@ -17,6 +17,7 @@ type (
 		consoleWriter *bytes.Buffer
 		errorWriter   *bytes.Buffer
 		logger        *RecordingLogger
+		tab           uint8
 	}
 
 	// WantedRecording is intended to be used in unit tests as part of the test
@@ -57,6 +58,7 @@ func NewRecorder() *Recorder {
 		consoleWriter: &bytes.Buffer{},
 		errorWriter:   &bytes.Buffer{},
 		logger:        NewRecordingLogger(),
+		tab:           0,
 	}
 }
 
@@ -104,12 +106,27 @@ func (r *Recorder) WriteError(format string, a ...any) {
 
 // WriteCanonicalConsole records data written to the console.
 func (r *Recorder) WriteCanonicalConsole(format string, a ...any) {
-	fmt.Fprint(r.consoleWriter, canonicalFormat(format, a...))
+	writeTabbedContent(r.consoleWriter, r.tab, canonicalFormat(format, a...))
 }
 
 // WriteConsole records data written to the console.
 func (r *Recorder) WriteConsole(format string, a ...any) {
-	fmt.Fprintf(r.consoleWriter, format, a...)
+	writeTabbedContent(r.consoleWriter, r.tab, fmt.Sprintf(format, a...))
+}
+
+// IncrementTab increments the tab setting by the specified number of spaces
+func (r *Recorder) IncrementTab(t uint8) {
+	r.tab = addTab(r.tab, t)
+}
+
+// DecrementTab decrements the tab setting by the specified number of spaces
+func (r *Recorder) DecrementTab(t uint8) {
+	r.tab = subtractTab(r.tab, t)
+}
+
+// Tab returns the current tab setting
+func (r *Recorder) Tab() uint8 {
+	return r.tab
 }
 
 // ConsoleOutput returns the data written as console output.

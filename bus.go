@@ -27,6 +27,10 @@ type (
 		ErrorWriter() io.Writer
 		IsConsoleTTY() bool
 		IsErrorTTY() bool
+		// tab support for console writing
+		Tab() uint8
+		IncrementTab(uint8)
+		DecrementTab(uint8)
 	}
 
 	// Logger defines a set of functions for writing to a log at various log
@@ -48,6 +52,7 @@ type (
 		performWrites bool
 		consoleTTY    bool
 		errorTTY      bool
+		tab           uint8
 	}
 )
 
@@ -92,6 +97,7 @@ func NewCustomBus(c, e io.Writer, l Logger) Bus {
 		performWrites: true,
 		consoleTTY:    isTTY(c),
 		errorTTY:      isTTY(e),
+		tab:           0,
 	}
 }
 
@@ -146,15 +152,48 @@ func (b *bus) WriteError(format string, a ...any) {
 // WriteCanonicalConsole writes output to a console in a canonical format.
 func (b *bus) WriteCanonicalConsole(format string, a ...any) {
 	if b.performWrites {
-		fmt.Fprint(b.consoleWriter, canonicalFormat(format, a...))
+		writeTabbedContent(b.consoleWriter, b.tab, canonicalFormat(format, a...))
 	}
 }
 
 // WriteConsole writes output to a console.
 func (b *bus) WriteConsole(format string, a ...any) {
 	if b.performWrites {
-		fmt.Fprintf(b.consoleWriter, format, a...)
+		writeTabbedContent(b.consoleWriter, b.tab, fmt.Sprintf(format, a...))
 	}
+}
+
+func writeTabbedContent(w io.Writer, tab uint8, content string) {
+	fmt.Fprintf(w, "%*s%s", tab, "", content)
+}
+
+// IncrementTab increments the tab setting by the specified number of spaces
+func (b *bus) IncrementTab(t uint8) {
+	b.tab = addTab(b.tab, t)
+}
+
+func addTab(originalTab, increment uint8) uint8 {
+	if originalTab+increment > originalTab {
+		return originalTab + increment
+	}
+	return originalTab
+}
+
+// DecrementTab decrements the tab setting by the specified number of spaces
+func (b *bus) DecrementTab(t uint8) {
+	b.tab = subtractTab(b.tab, t)
+}
+
+func subtractTab(originalTab, decrement uint8) uint8 {
+	if originalTab >= decrement {
+		return originalTab - decrement
+	}
+	return originalTab
+}
+
+// Tab returns the current tab setting
+func (b *bus) Tab() uint8 {
+	return b.tab
 }
 
 // IsConsoleTTY returns whether the console writer is a TTY

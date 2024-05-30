@@ -9,8 +9,7 @@ import (
 
 func TestNewRecorder(t *testing.T) {
 	fnName := "NewRecorder()"
-	tests := []struct {
-		name            string
+	tests := map[string]struct {
 		canonicalWrites bool
 		consoleFmt      string
 		consoleArgs     []any
@@ -18,24 +17,24 @@ func TestNewRecorder(t *testing.T) {
 		errorArgs       []any
 		logMessage      string
 		logArgs         map[string]any
+		tab             uint8
 		WantedRecording
 	}{
-		{
-			name:        "non-canonical test",
+		"non-canonical test": {
 			consoleFmt:  "%s %d %t",
 			consoleArgs: []any{"hello", 42, true},
 			errorFmt:    "%d %t %s",
 			errorArgs:   []any{24, false, "bye"},
 			logMessage:  "hello!",
 			logArgs:     map[string]any{"field": "value"},
+			tab:         0,
 			WantedRecording: WantedRecording{
 				Console: "hello 42 true",
 				Error:   "24 false bye",
 				Log:     "level='error' field='value' msg='hello!'\n",
 			},
 		},
-		{
-			name:            "canonical test",
+		"canonical test": {
 			canonicalWrites: true,
 			consoleFmt:      "%s %d %t",
 			consoleArgs:     []any{"hello", 42, true},
@@ -43,16 +42,47 @@ func TestNewRecorder(t *testing.T) {
 			errorArgs:       []any{24, false, "bye"},
 			logMessage:      "hello!",
 			logArgs:         map[string]any{"field": "value"},
+			tab:             0,
 			WantedRecording: WantedRecording{
 				Console: "Hello 42 true.\n",
 				Error:   "24 false bye.\n",
 				Log:     "level='error' field='value' msg='hello!'\n",
 			},
 		},
+		"non-canonical test with tab": {
+			consoleFmt:  "%s %d %t",
+			consoleArgs: []any{"hello", 42, true},
+			errorFmt:    "%d %t %s",
+			errorArgs:   []any{24, false, "bye"},
+			logMessage:  "hello!",
+			logArgs:     map[string]any{"field": "value"},
+			tab:         6,
+			WantedRecording: WantedRecording{
+				Console: "      hello 42 true",
+				Error:   "24 false bye",
+				Log:     "level='error' field='value' msg='hello!'\n",
+			},
+		},
+		"canonical test with tab": {
+			canonicalWrites: true,
+			consoleFmt:      "%s %d %t",
+			consoleArgs:     []any{"hello", 42, true},
+			errorFmt:        "%d %t %s",
+			errorArgs:       []any{24, false, "bye"},
+			logMessage:      "hello!",
+			logArgs:         map[string]any{"field": "value"},
+			tab:             4,
+			WantedRecording: WantedRecording{
+				Console: "    Hello 42 true.\n",
+				Error:   "24 false bye.\n",
+				Log:     "level='error' field='value' msg='hello!'\n",
+			},
+		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
 			o := NewRecorder()
+			o.tab = tt.tab
 			var i any = o
 			if _, ok := i.(Bus); !ok {
 				t.Errorf("%s: Recorder does not implement Bus", fnName)
@@ -495,6 +525,47 @@ func TestRecorder_IsErrorTTY(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			if got := tt.r.IsErrorTTY(); got != tt.want {
 				t.Errorf("Recorder.IsErrorTTY() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_Recorder_IncrementTab(t *testing.T) {
+	tests := map[string]struct {
+		initialTab uint8
+		t          uint8
+		want       uint8
+	}{
+		"typical":       {initialTab: 0, t: 2, want: 2},
+		"overflow":      {initialTab: 64, t: 192, want: 64},
+		"near-overflow": {initialTab: 64, t: 191, want: 255},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			r := &Recorder{tab: tt.initialTab}
+			r.IncrementTab(tt.t)
+			if got := r.Tab(); got != tt.want {
+				t.Errorf("Recorder.IncrementTab got %d want %d", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_Recorder_DecrementTab(t *testing.T) {
+	tests := map[string]struct {
+		initialTab uint8
+		t          uint8
+		want       uint8
+	}{
+		"typical":   {initialTab: 2, t: 2, want: 0},
+		"underflow": {initialTab: 2, t: 3, want: 2},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			r := &Recorder{tab: tt.initialTab}
+			r.DecrementTab(tt.t)
+			if got := r.Tab(); got != tt.want {
+				t.Errorf("Recorder.DecrementTab got %d want %d", got, tt.want)
 			}
 		})
 	}
