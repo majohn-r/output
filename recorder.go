@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"runtime"
 	"sort"
 	"strings"
 )
@@ -184,8 +185,13 @@ type TestingReporter interface {
 // differences.
 func (r *Recorder) Report(t TestingReporter, header string, w WantedRecording) {
 	if differences, verified := r.Verify(w); !verified {
+		var location string
+		if _, file, line, ok := runtime.Caller(1); ok {
+			location = fmt.Sprintf("file %q, line %d: ", file, line)
+		}
 		for _, difference := range differences {
-			t.Errorf("%s %s", header, difference)
+			t.Errorf("%s%s %s", location, header, difference)
+			location = ""
 		}
 	}
 }

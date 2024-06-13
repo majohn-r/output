@@ -96,21 +96,20 @@ In the test code, the output can be checked like this:
 
 ```go
 func Test_runProgramLogic {
-    tests := []struct {
+    tests := map[string]struct {
         name string
         args []string
         output.WantedRecording
     }{
-        {
-            name: "test case",
+        "test case": {
             args: []string{"hi" "12" "true"},
             WantedRecording: output.WantedRecording{
                 Console: "hello world: [hi 12 true]",
             },
         },
     }
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
+    for name, tt := range tests {
+        t.Run(name, func(t *testing.T) {
             o := NewRecorder()
             runProgramLogic(o, tt.args)
             if issues, ok := o.Verify(tt.WantedRecording); !ok {

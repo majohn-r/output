@@ -9,7 +9,6 @@ import (
 )
 
 func TestNewDefaultBus(t *testing.T) {
-	fnName := "NewDefaultBus()"
 	tests := map[string]struct {
 		want              Bus
 		wantConsoleWriter io.Writer
@@ -25,33 +24,30 @@ func TestNewDefaultBus(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			got := NewDefaultBus(NilLogger{})
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("%s = %v, want %v", fnName, got, tt.want)
+				t.Errorf("NewDefaultBus() = %v, want %v", got, tt.want)
 			}
 			if w := got.ConsoleWriter(); w != tt.wantConsoleWriter {
-				t.Errorf("%s got console writer %v, want %v", fnName, w, tt.wantConsoleWriter)
+				t.Errorf("NewDefaultBus() got console writer %v, want %v", w, tt.wantConsoleWriter)
 			}
 			if w := got.ErrorWriter(); w != tt.wantErrorWriter {
-				t.Errorf("%s got error writer %v, want %v", fnName, w, tt.wantErrorWriter)
+				t.Errorf("NewDefaultBus() got error writer %v, want %v", w, tt.wantErrorWriter)
 			}
 		})
 	}
 }
 
 func Test_bus_Log(t *testing.T) {
-	fnName := "bus.Log()"
 	type args struct {
 		l    Level
 		msg  string
 		args map[string]any
 	}
-	tests := []struct {
-		name string
+	tests := map[string]struct {
 		args
 		Log   string
 		Error string
 	}{
-		{
-			name: "trace",
+		"trace": {
 			args: args{
 				l:    Trace,
 				msg:  "hello",
@@ -59,8 +55,7 @@ func Test_bus_Log(t *testing.T) {
 			},
 			Log: "level='trace' f='v' msg='hello'\n",
 		},
-		{
-			name: "debug",
+		"debug": {
 			args: args{
 				l:    Debug,
 				msg:  "hello",
@@ -68,8 +63,7 @@ func Test_bus_Log(t *testing.T) {
 			},
 			Log: "level='debug' f='v' msg='hello'\n",
 		},
-		{
-			name: "info",
+		"info": {
 			args: args{
 				l:    Info,
 				msg:  "hello",
@@ -77,8 +71,7 @@ func Test_bus_Log(t *testing.T) {
 			},
 			Log: "level='info' f='v' msg='hello'\n",
 		},
-		{
-			name: "warning",
+		"warning": {
 			args: args{
 				l:    Warning,
 				msg:  "hello",
@@ -86,8 +79,7 @@ func Test_bus_Log(t *testing.T) {
 			},
 			Log: "level='warning' f='v' msg='hello'\n",
 		},
-		{
-			name: "error",
+		"error": {
 			args: args{
 				l:    Error,
 				msg:  "hello",
@@ -95,8 +87,7 @@ func Test_bus_Log(t *testing.T) {
 			},
 			Log: "level='error' f='v' msg='hello'\n",
 		},
-		{
-			name: "panic",
+		"panic": {
 			args: args{
 				l:    Panic,
 				msg:  "hello",
@@ -104,8 +95,7 @@ func Test_bus_Log(t *testing.T) {
 			},
 			Log: "level='panic' f='v' msg='hello'\n",
 		},
-		{
-			name: "fatal",
+		"fatal": {
 			args: args{
 				l:    Fatal,
 				msg:  "hello",
@@ -113,8 +103,7 @@ func Test_bus_Log(t *testing.T) {
 			},
 			Log: "level='fatal' f='v' msg='hello'\n",
 		},
-		{
-			name: "illegal",
+		"illegal": {
 			args: args{
 				l:    Trace + 1,
 				msg:  "hello",
@@ -123,132 +112,119 @@ func Test_bus_Log(t *testing.T) {
 			Error: "Programming error: call to bus.Log() with invalid level value 7; message: 'hello', args: 'map[f:v].\n",
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
 			eW := &bytes.Buffer{}
 			l := NewRecordingLogger()
 			o := NewCustomBus(nil, eW, l)
 			o.Log(tt.args.l, tt.args.msg, tt.args.args)
 			if got := l.writer.String(); got != tt.Log {
-				t.Errorf("%s got log %q want %q", fnName, got, tt.Log)
+				t.Errorf("bus.Log() got log %q want %q", got, tt.Log)
 			}
 			if got := eW.String(); got != tt.Error {
-				t.Errorf("%s got error %q want %q", fnName, got, tt.Error)
+				t.Errorf("bus.Log() got error %q want %q", got, tt.Error)
 			}
 		})
 	}
 }
 
 func Test_bus_WriteCanonicalError(t *testing.T) {
-	fnName := "bus.WriteCanonicalError()"
 	type args struct {
 		format string
 		a      []any
 	}
-	tests := []struct {
-		name string
+	tests := map[string]struct {
 		args
 		want string
 	}{
-		{
-			name: "broad test",
+		"broad test": {
 			args: args{
 				format: "test format %d %q %v..?!..?\n\n\n\n",
 				a:      []any{25, "foo", 1.245},
 			},
 			want: "Test format 25 \"foo\" 1.245?\n",
 		},
-		{
-			name: "narrow test",
+		"narrow test": {
 			args: args{
 				format: "1. test format %d %q %v",
 				a:      []any{25, "foo", 1.245},
 			},
 			want: "1. test format 25 \"foo\" 1.245.\n",
 		},
-		{
-			name: "nothing but newlines",
+		"nothing but newlines": {
 			args: args{
 				format: "\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
 			},
 			want: "\n",
 		},
-		{
-			name: "nothing but terminal punctuation",
+		"nothing but terminal punctuation": {
 			args: args{
 				format: "!!?.!?.",
 			},
 			want: ".\n",
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
 			w := &bytes.Buffer{}
 			o := &bus{errorWriter: w, performWrites: true}
 			o.WriteCanonicalError(tt.args.format, tt.args.a...)
 			if got := w.String(); got != tt.want {
-				t.Errorf("%s got %q want %q", fnName, got, tt.want)
+				t.Errorf("bus.WriteCanonicalError() got %q want %q", got, tt.want)
 			}
 		})
 	}
 }
 
 func Test_bus_WriteError(t *testing.T) {
-	fnName := "bus.WriteError()"
 	type args struct {
 		format string
 		a      []any
 	}
-	tests := []struct {
-		name string
+	tests := map[string]struct {
 		args
 		want string
 	}{
-		{
-			name: "broad test",
+		"broad test": {
 			args: args{
 				format: "test format %d %q %v..?!..?\n\n\n\n",
 				a:      []any{25, "foo", 1.245},
 			},
 			want: "test format 25 \"foo\" 1.245..?!..?\n\n\n\n",
 		},
-		{
-			name: "narrow test",
+		"narrow test": {
 			args: args{
 				format: "1. test format %d %q %v",
 				a:      []any{25, "foo", 1.245},
 			},
 			want: "1. test format 25 \"foo\" 1.245",
 		},
-		{
-			name: "nothing but newlines",
+		"nothing but newlines": {
 			args: args{
 				format: "\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
 			},
 			want: "\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
 		},
-		{
-			name: "nothing but terminal punctuation",
+		"nothing but terminal punctuation": {
 			args: args{
 				format: "!!?.!?.",
 			},
 			want: "!!?.!?.",
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
 			w := &bytes.Buffer{}
 			o := &bus{errorWriter: w, performWrites: true}
 			o.WriteError(tt.args.format, tt.args.a...)
 			if got := w.String(); got != tt.want {
-				t.Errorf("%s got %q want %q", fnName, got, tt.want)
+				t.Errorf("bus.WriteError() got %q want %q", got, tt.want)
 			}
 		})
 	}
 }
 
 func Test_bus_WriteCanonicalConsole(t *testing.T) {
-	fnName := "bus.WriteCanonicalConsole()"
 	type args struct {
 		format string
 		a      []any
@@ -283,14 +259,13 @@ func Test_bus_WriteCanonicalConsole(t *testing.T) {
 			o := &bus{consoleWriter: tt.w, performWrites: true, tab: tt.tab}
 			o.WriteCanonicalConsole(tt.args.format, tt.args.a...)
 			if got := tt.w.String(); got != tt.want {
-				t.Errorf("%s: got %q want %q", fnName, got, tt.want)
+				t.Errorf("bus.WriteCanonicalConsole() got %q want %q", got, tt.want)
 			}
 		})
 	}
 }
 
 func Test_bus_WriteConsole(t *testing.T) {
-	fnName := "bus.WriteConsole()"
 	type args struct {
 		format string
 		a      []any
@@ -325,7 +300,7 @@ func Test_bus_WriteConsole(t *testing.T) {
 			o := &bus{consoleWriter: tt.w, performWrites: true, tab: tt.tab}
 			o.WriteConsole(tt.args.format, tt.args.a...)
 			if got := tt.w.String(); got != tt.want {
-				t.Errorf("%s: got %q want %q", fnName, got, tt.want)
+				t.Errorf("bus.WriteConsole() got %q want %q", got, tt.want)
 			}
 		})
 	}

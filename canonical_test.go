@@ -9,44 +9,35 @@ func Test_canonicalFormat(t *testing.T) {
 		format string
 		a      []any
 	}
-	tests := []struct {
-		name string
+	tests := map[string]struct {
 		args
 		want string
 	}{
-		{
-			name: "broad test",
+		"broad test": {
 			args: args{
 				format: "test format %d %q %v..?!..?\n\n\n\n",
 				a:      []any{25, "foo", 1.245},
 			},
 			want: "Test format 25 \"foo\" 1.245?\n",
 		},
-		{
-			name: "narrow test",
+		"narrow test": {
 			args: args{
 				format: "1. test format %d %q %v",
 				a:      []any{25, "foo", 1.245},
 			},
 			want: "1. test format 25 \"foo\" 1.245.\n",
 		},
-		{
-			name: "nothing but newlines",
-			args: args{
-				format: "\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
-			},
+		"nothing but newlines": {
+			args: args{format: "\n\n\n\n\n\n\n\n\n\n\n\n\n\n"},
 			want: "\n",
 		},
-		{
-			name: "nothing but terminal punctuation",
-			args: args{
-				format: "!!?.!?.",
-			},
+		"nothing but terminal punctuation": {
+			args: args{format: "!!?.!?."},
 			want: ".\n",
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
 			if got := canonicalFormat(tt.args.format, tt.args.a...); got != tt.want {
 				t.Errorf("canonicalFormat() = %v, want %v", got, tt.want)
 			}
@@ -55,46 +46,30 @@ func Test_canonicalFormat(t *testing.T) {
 }
 
 func Test_renderCanonical(t *testing.T) {
-	type args struct {
-		s string
-	}
-	tests := []struct {
-		name string
-		args
+	tests := map[string]struct {
+		s    string
 		want string
 	}{
-		{
-			name: "broad test",
-			args: args{
-				s: "test format 25 \"foo\" 1.245..?!..?\n\n\n\n",
-			},
+		"broad test": {
+			s:    "test format 25 \"foo\" 1.245..?!..?\n\n\n\n",
 			want: "Test format 25 \"foo\" 1.245?\n",
 		},
-		{
-			name: "narrow test",
-			args: args{
-				s: "1. test format 25 \"foo\" 1.245",
-			},
+		"narrow test": {
+			s:    "1. test format 25 \"foo\" 1.245",
 			want: "1. test format 25 \"foo\" 1.245.\n",
 		},
-		{
-			name: "nothing but newlines",
-			args: args{
-				s: "\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
-			},
+		"nothing but newlines": {
+			s:    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
 			want: "\n",
 		},
-		{
-			name: "nothing but terminal punctuation",
-			args: args{
-				s: "!!?.!?.",
-			},
+		"nothing but terminal punctuation": {
+			s:    "!!?.!?.",
 			want: ".\n",
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := renderCanonical(tt.args.s); got != tt.want {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			if got := renderCanonical(tt.s); got != tt.want {
 				t.Errorf("renderCanonical() = %v, want %v", got, tt.want)
 			}
 		})
@@ -102,46 +77,30 @@ func Test_renderCanonical(t *testing.T) {
 }
 
 func Test_fixTerminalPunctuation(t *testing.T) {
-	type args struct {
-		s string
-	}
-	tests := []struct {
-		name string
-		args
+	tests := map[string]struct {
+		s    string
 		want string
 	}{
-		{
-			name: "broad test",
-			args: args{
-				s: "test format 25 \"foo\" 1.245..?!..?",
-			},
+		"broad test": {
+			s:    "test format 25 \"foo\" 1.245..?!..?",
 			want: "test format 25 \"foo\" 1.245?",
 		},
-		{
-			name: "narrow test",
-			args: args{
-				s: "1. test format 25 \"foo\" 1.245",
-			},
+		"narrow test": {
+			s:    "1. test format 25 \"foo\" 1.245",
 			want: "1. test format 25 \"foo\" 1.245.",
 		},
-		{
-			name: "nothing",
-			args: args{
-				s: "",
-			},
+		"nothing": {
+			s:    "",
 			want: "",
 		},
-		{
-			name: "nothing but terminal punctuation",
-			args: args{
-				s: "!!?.!?.",
-			},
+		"nothing but terminal punctuation": {
+			s:    "!!?.!?.",
 			want: ".",
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := fixTerminalPunctuation(tt.args.s); got != tt.want {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			if got := fixTerminalPunctuation(tt.s); got != tt.want {
 				t.Errorf("fixTerminalPunctuation() = %v, want %v", got, tt.want)
 			}
 		})
@@ -149,46 +108,30 @@ func Test_fixTerminalPunctuation(t *testing.T) {
 }
 
 func Test_stripTrailingNewlines(t *testing.T) {
-	type args struct {
-		s string
-	}
-	tests := []struct {
-		name string
-		args
+	tests := map[string]struct {
+		s    string
 		want string
 	}{
-		{
-			name: "broad test",
-			args: args{
-				s: "test format 25 \"foo\" 1.245..?!..?\n\n\n\n",
-			},
+		"broad test": {
+			s:    "test format 25 \"foo\" 1.245..?!..?\n\n\n\n",
 			want: "test format 25 \"foo\" 1.245..?!..?",
 		},
-		{
-			name: "narrow test",
-			args: args{
-				s: "1. test format 25 \"foo\" 1.245",
-			},
+		"narrow test": {
+			s:    "1. test format 25 \"foo\" 1.245",
 			want: "1. test format 25 \"foo\" 1.245",
 		},
-		{
-			name: "nothing but newlines",
-			args: args{
-				s: "\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
-			},
+		"nothing but newlines": {
+			s:    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
 			want: "",
 		},
-		{
-			name: "nothing",
-			args: args{
-				s: "",
-			},
+		"nothing": {
+			s:    "",
 			want: "",
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := stripTrailingNewlines(tt.args.s); got != tt.want {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			if got := stripTrailingNewlines(tt.s); got != tt.want {
 				t.Errorf("stripTrailingNewlines() = %v, want %v", got, tt.want)
 			}
 		})
@@ -196,46 +139,30 @@ func Test_stripTrailingNewlines(t *testing.T) {
 }
 
 func Test_capitalize(t *testing.T) {
-	type args struct {
-		s string
-	}
-	tests := []struct {
-		name string
-		args
+	tests := map[string]struct {
+		s    string
 		want string
 	}{
-		{
-			name: "broad test",
-			args: args{
-				s: "test format 25 \"foo\" 1.245..?!..?\n\n\n\n",
-			},
+		"broad test": {
+			s:    "test format 25 \"foo\" 1.245..?!..?\n\n\n\n",
 			want: "Test format 25 \"foo\" 1.245..?!..?\n\n\n\n",
 		},
-		{
-			name: "narrow test",
-			args: args{
-				s: "1. test format 25 \"foo\" 1.245",
-			},
+		"narrow test": {
+			s:    "1. test format 25 \"foo\" 1.245",
 			want: "1. test format 25 \"foo\" 1.245",
 		},
-		{
-			name: "nothing but newlines",
-			args: args{
-				s: "\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
-			},
+		"nothing but newlines": {
+			s:    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
 			want: "\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
 		},
-		{
-			name: "nothing",
-			args: args{
-				s: "",
-			},
+		"nothing": {
+			s:    "",
 			want: "",
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := capitalize(tt.args.s); got != tt.want {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			if got := capitalize(tt.s); got != tt.want {
 				t.Errorf("capitalize() = %v, want %v", got, tt.want)
 			}
 		})
@@ -243,36 +170,32 @@ func Test_capitalize(t *testing.T) {
 }
 
 func Test_isSentenceTerminatingPunctuation(t *testing.T) {
-	type args struct {
-		s string
-	}
-	tests := []struct {
-		name string
-		args
+	tests := map[string]struct {
+		s    string
 		want bool
 	}{
-		{name: "period", args: args{s: "."}, want: true},
-		{name: "question mark", args: args{s: "?"}, want: true},
-		{name: "exclamation point", args: args{s: "!"}, want: true},
-		{name: "comma", args: args{s: ","}, want: false},
-		{name: "semicolon", args: args{s: ";"}, want: false},
-		{name: "colon", args: args{s: ":"}, want: false},
-		{name: "en dash", args: args{s: "\u2013"}, want: false},
-		{name: "em dash", args: args{s: "—"}, want: false},
-		{name: "hyphen", args: args{s: "-"}, want: false},
-		{name: "left parenthesis", args: args{s: "("}, want: false},
-		{name: "right parenthesis", args: args{s: ")"}, want: false},
-		{name: "left bracket", args: args{s: "["}, want: false},
-		{name: "right bracket", args: args{s: "]"}, want: false},
-		{name: "left brace", args: args{s: "{"}, want: false},
-		{name: "right brace", args: args{s: "}"}, want: false},
-		{name: "apostrophe", args: args{s: "'"}, want: false},
-		{name: "plain quotation mark", args: args{s: "\""}, want: false},
-		{name: "ellipsis", args: args{s: "…"}, want: false},
+		"period":               {s: ".", want: true},
+		"question mark":        {s: "?", want: true},
+		"exclamation point":    {s: "!", want: true},
+		"comma":                {s: ",", want: false},
+		"semicolon":            {s: ";", want: false},
+		"colon":                {s: ":", want: false},
+		"en dash":              {s: "\u2013", want: false},
+		"em dash":              {s: "—", want: false},
+		"hyphen":               {s: "-", want: false},
+		"left parenthesis":     {s: "(", want: false},
+		"right parenthesis":    {s: ")", want: false},
+		"left bracket":         {s: "[", want: false},
+		"right bracket":        {s: "]", want: false},
+		"left brace":           {s: "{", want: false},
+		"right brace":          {s: "}", want: false},
+		"apostrophe":           {s: "'", want: false},
+		"plain quotation mark": {s: "\"", want: false},
+		"ellipsis":             {s: "…", want: false},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := isSentenceTerminatingPunctuation(tt.args.s); got != tt.want {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			if got := isSentenceTerminatingPunctuation(tt.s); got != tt.want {
 				t.Errorf("isSentenceTerminatingPunctuation() = %v, want %v", got, tt.want)
 			}
 		})

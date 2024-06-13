@@ -5,11 +5,11 @@ import (
 )
 
 func TestNewNilBus(t *testing.T) {
-	tests := []struct {
-		name string
-	}{{name: "simple test"}}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	tests := map[string]struct{}{
+		"simple test": {},
+	}
+	for name := range tests {
+		t.Run(name, func(t *testing.T) {
 			o := NewNilBus()
 			// none of these calls do anything ... here for pedantic test coverage
 			o.WriteCanonicalConsole("%s %d %t", "foo", 42, true)
@@ -21,45 +21,34 @@ func TestNewNilBus(t *testing.T) {
 }
 
 func TestNilWriter_Write(t *testing.T) {
-	fnName := "NilWriter.Write()"
-	type args struct {
-		p []byte
-	}
-	tests := []struct {
-		name string
-		nw   NilWriter
-		args
+	tests := map[string]struct {
+		nw      NilWriter
+		p       []byte
 		wantN   int
 		wantErr bool
 	}{
-		{
-			name: "a few bytes",
-			nw:   NilWriter{},
-			args: args{
-				p: []byte{0, 1, 2},
-			},
+		"a few bytes": {
+			nw:      NilWriter{},
+			p:       []byte{0, 1, 2},
 			wantN:   3,
 			wantErr: false,
 		},
-		{
-			name: "nil",
-			nw:   NilWriter{},
-			args: args{
-				p: nil,
-			},
+		"nil": {
+			nw:      NilWriter{},
+			p:       nil,
 			wantN:   0,
 			wantErr: false,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotN, err := tt.nw.Write(tt.args.p)
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			gotN, err := tt.nw.Write(tt.p)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("%s error = %v, wantErr %v", fnName, err, tt.wantErr)
+				t.Errorf("NilWriter.Write() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if gotN != tt.wantN {
-				t.Errorf("%s = %v, want %v", fnName, gotN, tt.wantN)
+				t.Errorf("NilWriter.Write() = %v, want %v", gotN, tt.wantN)
 			}
 		})
 	}
