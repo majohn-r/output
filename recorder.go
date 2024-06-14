@@ -187,7 +187,8 @@ func (r *Recorder) Report(t TestingReporter, header string, w WantedRecording) {
 	if differences, verified := r.Verify(w); !verified {
 		var location string
 		if _, file, line, ok := runtime.Caller(1); ok {
-			location = fmt.Sprintf("file %q, line %d: ", file, line)
+			canonicalFile := strings.ReplaceAll(file, "/", "\\")
+			location = fmt.Sprintf("called from %s:%d: ", canonicalFile, line)
 		}
 		for _, difference := range differences {
 			t.Errorf("%s%s %s", location, header, difference)
