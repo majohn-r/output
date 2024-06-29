@@ -224,9 +224,9 @@ func Test_lastCharacter(t *testing.T) {
 			wantLastChar: "a",
 		},
 		"lots": {
-			s:            "gjdfhgdsfhgiudsfhgiuldshgiu",
-			wantResultS:  "gjdfhgdsfhgiudsfhgiuldshgi",
-			wantLastChar: "i",
+			s:            "expositions",
+			wantResultS:  "exposition",
+			wantLastChar: "n",
 		},
 	}
 	for name, tt := range tests {

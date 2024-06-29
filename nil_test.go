@@ -1,6 +1,7 @@
-package output
+package output_test
 
 import (
+	"github.com/majohn-r/output"
 	"testing"
 )
 
@@ -10,7 +11,7 @@ func TestNewNilBus(t *testing.T) {
 	}
 	for name := range tests {
 		t.Run(name, func(t *testing.T) {
-			o := NewNilBus()
+			o := output.NewNilBus()
 			// none of these calls do anything ... here for pedantic test coverage
 			o.WriteCanonicalConsole("%s %d %t", "foo", 42, true)
 			o.WriteConsole("%s %d %t", "foo", 42, true)
@@ -22,19 +23,19 @@ func TestNewNilBus(t *testing.T) {
 
 func TestNilWriter_Write(t *testing.T) {
 	tests := map[string]struct {
-		nw      NilWriter
+		nw      output.NilWriter
 		p       []byte
 		wantN   int
 		wantErr bool
 	}{
 		"a few bytes": {
-			nw:      NilWriter{},
+			nw:      output.NilWriter{},
 			p:       []byte{0, 1, 2},
 			wantN:   3,
 			wantErr: false,
 		},
 		"nil": {
-			nw:      NilWriter{},
+			nw:      output.NilWriter{},
 			p:       nil,
 			wantN:   0,
 			wantErr: false,
@@ -60,9 +61,9 @@ func TestNilLogger_All(t *testing.T) {
 		fields map[string]any
 	}
 	tests := map[string]struct {
-		nl   NilLogger
+		nl   output.NilLogger
 		args args
-	}{"default": {nl: NilLogger{}, args: args{}}}
+	}{"default": {nl: output.NilLogger{}, args: args{}}}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			tt.nl.Debug(tt.args.msg, tt.args.fields)

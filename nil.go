@@ -24,31 +24,31 @@ func NewNilBus() Bus {
 }
 
 // Trace does nothing.
-func (nl NilLogger) Trace(msg string, fields map[string]any) {
+func (nl NilLogger) Trace(_ string, _ map[string]any) {
 }
 
 // Debug does nothing.
-func (nl NilLogger) Debug(msg string, fields map[string]any) {
+func (nl NilLogger) Debug(_ string, _ map[string]any) {
 }
 
 // Info does nothing.
-func (nl NilLogger) Info(msg string, fields map[string]any) {
+func (nl NilLogger) Info(_ string, _ map[string]any) {
 }
 
 // Warning does nothing.
-func (nl NilLogger) Warning(msg string, fields map[string]any) {
+func (nl NilLogger) Warning(_ string, _ map[string]any) {
 }
 
 // Error does nothing.
-func (nl NilLogger) Error(msg string, fields map[string]any) {
+func (nl NilLogger) Error(_ string, _ map[string]any) {
 }
 
 // Panic does nothing.
-func (nl NilLogger) Panic(msg string, fields map[string]any) {
+func (nl NilLogger) Panic(_ string, _ map[string]any) {
 }
 
 // Fatal does nothing.
-func (nl NilLogger) Fatal(msg string, fields map[string]any) {
+func (nl NilLogger) Fatal(_ string, _ map[string]any) {
 }
 
 // Write does nothing except return the expected values

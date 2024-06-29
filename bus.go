@@ -27,9 +27,11 @@ type (
 		ErrorWriter() io.Writer
 		IsConsoleTTY() bool
 		IsErrorTTY() bool
-		// tab support for console writing
+		// Tab returns the current tab setting (number of spaces)
 		Tab() uint8
+		// IncrementTab increases the current tab setting up to the max uint8 value
 		IncrementTab(uint8)
+		// DecrementTab decreases the current tab setting; will not go below 0
 		DecrementTab(uint8)
 	}
 
@@ -138,7 +140,7 @@ func (b *bus) ErrorWriter() io.Writer {
 // WriteCanonicalError writes error output in a canonical format.
 func (b *bus) WriteCanonicalError(format string, a ...any) {
 	if b.performWrites {
-		fmt.Fprint(b.errorWriter, canonicalFormat(format, a...))
+		_, _ = fmt.Fprint(b.errorWriter, canonicalFormat(format, a...))
 	}
 }
 

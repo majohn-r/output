@@ -1,8 +1,8 @@
-package output
+package output_test
 
 import (
-	"bytes"
 	"fmt"
+	"github.com/majohn-r/output"
 	"reflect"
 	"strings"
 	"testing"
@@ -18,7 +18,7 @@ func TestNewRecorder(t *testing.T) {
 		logMessage      string
 		logArgs         map[string]any
 		tab             uint8
-		WantedRecording
+		output.WantedRecording
 	}{
 		"non-canonical test": {
 			consoleFmt:  "%s %d %t",
@@ -28,7 +28,7 @@ func TestNewRecorder(t *testing.T) {
 			logMessage:  "hello!",
 			logArgs:     map[string]any{"field": "value"},
 			tab:         0,
-			WantedRecording: WantedRecording{
+			WantedRecording: output.WantedRecording{
 				Console: "hello 42 true",
 				Error:   "24 false bye",
 				Log:     "level='error' field='value' msg='hello!'\n",
@@ -43,7 +43,7 @@ func TestNewRecorder(t *testing.T) {
 			logMessage:      "hello!",
 			logArgs:         map[string]any{"field": "value"},
 			tab:             0,
-			WantedRecording: WantedRecording{
+			WantedRecording: output.WantedRecording{
 				Console: "Hello 42 true.\n",
 				Error:   "24 false bye.\n",
 				Log:     "level='error' field='value' msg='hello!'\n",
@@ -57,7 +57,7 @@ func TestNewRecorder(t *testing.T) {
 			logMessage:  "hello!",
 			logArgs:     map[string]any{"field": "value"},
 			tab:         6,
-			WantedRecording: WantedRecording{
+			WantedRecording: output.WantedRecording{
 				Console: "      hello 42 true",
 				Error:   "24 false bye",
 				Log:     "level='error' field='value' msg='hello!'\n",
@@ -72,7 +72,7 @@ func TestNewRecorder(t *testing.T) {
 			logMessage:      "hello!",
 			logArgs:         map[string]any{"field": "value"},
 			tab:             4,
-			WantedRecording: WantedRecording{
+			WantedRecording: output.WantedRecording{
 				Console: "    Hello 42 true.\n",
 				Error:   "24 false bye.\n",
 				Log:     "level='error' field='value' msg='hello!'\n",
@@ -81,10 +81,10 @@ func TestNewRecorder(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			o := NewRecorder()
-			o.tab = tt.tab
+			o := output.NewRecorder()
+			o.IncrementTab(tt.tab)
 			var i any = o
-			if _, ok := i.(Bus); !ok {
+			if _, ok := i.(output.Bus); !ok {
 				t.Errorf("NewRecorder() Recorder does not implement Bus")
 			}
 			if o.ConsoleWriter() == nil {
@@ -100,7 +100,16 @@ func TestNewRecorder(t *testing.T) {
 				o.WriteConsole(tt.consoleFmt, tt.consoleArgs...)
 				o.WriteError(tt.errorFmt, tt.errorArgs...)
 			}
-			o.Log(Error, tt.logMessage, tt.logArgs)
+			o.Log(output.Error, tt.logMessage, tt.logArgs)
+			if got := o.ConsoleOutput(); got != tt.WantedRecording.Console {
+				t.Errorf("NewRecorder().ConsoleOutput() = %v, want %v", got, tt.WantedRecording.Console)
+			}
+			if got := o.ErrorOutput(); got != tt.WantedRecording.Error {
+				t.Errorf("NewRecorder().ErrorOutput() = %v, want %v", got, tt.WantedRecording.Error)
+			}
+			if got := o.LogOutput(); got != tt.WantedRecording.Log {
+				t.Errorf("NewRecorder().LogOutput() = %v, want %v", got, tt.WantedRecording.Log)
+			}
 			if issues, verified := o.Verify(tt.WantedRecording); !verified {
 				for _, issue := range issues {
 					t.Errorf("NewRecorder() %s", issue)
@@ -112,19 +121,25 @@ func TestNewRecorder(t *testing.T) {
 
 func TestRecorder_Verify(t *testing.T) {
 	type args struct {
-		o *Recorder
-		w WantedRecording
+		o *output.Recorder
+		w output.WantedRecording
 	}
 	tests := map[string]struct {
 		args
 		wantDifferences []string
 		wantVerified    bool
 	}{
-		"normal": {args: args{o: NewRecorder(), w: WantedRecording{}}, wantVerified: true},
+		"normal": {
+			args: args{
+				o: output.NewRecorder(),
+				w: output.WantedRecording{},
+			},
+			wantVerified: true,
+		},
 		"errors": {
 			args: args{
-				o: NewRecorder(),
-				w: WantedRecording{
+				o: output.NewRecorder(),
+				w: output.WantedRecording{
 					Console: "unexpected console output",
 					Error:   "unexpected error output",
 					Log:     "unexpected log output",
@@ -156,7 +171,7 @@ func TestRecorder_Verify(t *testing.T) {
 			}
 		})
 		tType := reflect.TypeOf(t)
-		interfaceType := reflect.TypeOf((*TestingReporter)(nil)).Elem()
+		interfaceType := reflect.TypeOf((*output.TestingReporter)(nil)).Elem()
 		if !tType.Implements(interfaceType) {
 			t.Errorf("Recorder.Verify() *testing.T does not implement TestingReporter")
 		}
@@ -177,7 +192,7 @@ func (vr *verificationReporter) Errorf(format string, data ...any) {
 
 func TestRecorder_Log(t *testing.T) {
 	type args struct {
-		l    Level
+		l    output.Level
 		msg  string
 		args map[string]any
 	}
@@ -188,7 +203,7 @@ func TestRecorder_Log(t *testing.T) {
 	}{
 		"trace": {
 			args: args{
-				l:    Trace,
+				l:    output.Trace,
 				msg:  "hello",
 				args: map[string]any{"f": "v"},
 			},
@@ -196,7 +211,7 @@ func TestRecorder_Log(t *testing.T) {
 		},
 		"debug": {
 			args: args{
-				l:    Debug,
+				l:    output.Debug,
 				msg:  "hello",
 				args: map[string]any{"f": "v"},
 			},
@@ -204,7 +219,7 @@ func TestRecorder_Log(t *testing.T) {
 		},
 		"info": {
 			args: args{
-				l:    Info,
+				l:    output.Info,
 				msg:  "hello",
 				args: map[string]any{"f": "v"},
 			},
@@ -212,7 +227,7 @@ func TestRecorder_Log(t *testing.T) {
 		},
 		"warning": {
 			args: args{
-				l:    Warning,
+				l:    output.Warning,
 				msg:  "hello",
 				args: map[string]any{"f": "v"},
 			},
@@ -220,7 +235,7 @@ func TestRecorder_Log(t *testing.T) {
 		},
 		"error": {
 			args: args{
-				l:    Error,
+				l:    output.Error,
 				msg:  "hello",
 				args: map[string]any{"f": "v"},
 			},
@@ -228,7 +243,7 @@ func TestRecorder_Log(t *testing.T) {
 		},
 		"panic": {
 			args: args{
-				l:    Panic,
+				l:    output.Panic,
 				msg:  "hello",
 				args: map[string]any{"f": "v"},
 			},
@@ -236,7 +251,7 @@ func TestRecorder_Log(t *testing.T) {
 		},
 		"fatal": {
 			args: args{
-				l:    Fatal,
+				l:    output.Fatal,
 				msg:  "hello",
 				args: map[string]any{"f": "v"},
 			},
@@ -244,7 +259,7 @@ func TestRecorder_Log(t *testing.T) {
 		},
 		"illegal": {
 			args: args{
-				l:    Trace + 1,
+				l:    output.Trace + 1,
 				msg:  "hello",
 				args: map[string]any{"f": "v"},
 			},
@@ -253,7 +268,7 @@ func TestRecorder_Log(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			r := NewRecorder()
+			r := output.NewRecorder()
 			r.Log(tt.args.l, tt.args.msg, tt.args.args)
 			if got := r.LogOutput(); got != tt.Log {
 				t.Errorf("Recorder.Log() got log %q want %q", got, tt.Log)
@@ -272,12 +287,12 @@ func TestRecordingLogger_Trace(t *testing.T) {
 	}
 	tests := map[string]struct {
 		name string
-		tl   RecordingLogger
+		tl   *output.RecordingLogger
 		args
 		want string
 	}{
 		"simple test": {
-			tl: RecordingLogger{writer: &bytes.Buffer{}},
+			tl: output.NewRecordingLogger(),
 			args: args{
 				msg:    "simple message",
 				fields: map[string]any{"f1": 1, "f2": true, "f3": "v"},
@@ -288,7 +303,7 @@ func TestRecordingLogger_Trace(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			tt.tl.Trace(tt.args.msg, tt.args.fields)
-			if got := tt.tl.writer.String(); got != tt.want {
+			if got := tt.tl.String(); got != tt.want {
 				t.Errorf("RecordingLogger.Trace() got %q want %q", got, tt.want)
 			}
 		})
@@ -301,12 +316,12 @@ func TestRecordingLogger_Debug(t *testing.T) {
 		fields map[string]any
 	}
 	tests := map[string]struct {
-		tl RecordingLogger
+		tl *output.RecordingLogger
 		args
 		want string
 	}{
 		"simple test": {
-			tl: RecordingLogger{writer: &bytes.Buffer{}},
+			tl: output.NewRecordingLogger(),
 			args: args{
 				msg:    "simple message",
 				fields: map[string]any{"f1": 1, "f2": true, "f3": "v"},
@@ -317,7 +332,7 @@ func TestRecordingLogger_Debug(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			tt.tl.Debug(tt.args.msg, tt.args.fields)
-			if got := tt.tl.writer.String(); got != tt.want {
+			if got := tt.tl.String(); got != tt.want {
 				t.Errorf("RecordingLogger.Debug() got %q want %q", got, tt.want)
 			}
 		})
@@ -330,12 +345,12 @@ func TestRecordingLogger_Info(t *testing.T) {
 		fields map[string]any
 	}
 	tests := map[string]struct {
-		tl RecordingLogger
+		tl *output.RecordingLogger
 		args
 		want string
 	}{
 		"simple test": {
-			tl: RecordingLogger{writer: &bytes.Buffer{}},
+			tl: output.NewRecordingLogger(),
 			args: args{
 				msg:    "simple message",
 				fields: map[string]any{"f1": 1, "f2": true, "f3": "v"},
@@ -346,7 +361,7 @@ func TestRecordingLogger_Info(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			tt.tl.Info(tt.args.msg, tt.args.fields)
-			if got := tt.tl.writer.String(); got != tt.want {
+			if got := tt.tl.String(); got != tt.want {
 				t.Errorf("RecordingLogger.Info() got %q want %q", got, tt.want)
 			}
 		})
@@ -359,12 +374,12 @@ func TestRecordingLogger_Warning(t *testing.T) {
 		fields map[string]any
 	}
 	tests := map[string]struct {
-		tl RecordingLogger
+		tl *output.RecordingLogger
 		args
 		want string
 	}{
 		"simple test": {
-			tl: RecordingLogger{writer: &bytes.Buffer{}},
+			tl: output.NewRecordingLogger(),
 			args: args{
 				msg:    "simple message",
 				fields: map[string]any{"f1": 1, "f2": true, "f3": "v"},
@@ -375,7 +390,7 @@ func TestRecordingLogger_Warning(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			tt.tl.Warning(tt.args.msg, tt.args.fields)
-			if got := tt.tl.writer.String(); got != tt.want {
+			if got := tt.tl.String(); got != tt.want {
 				t.Errorf("RecordingLogger.Warning() got %q want %q", got, tt.want)
 			}
 		})
@@ -388,12 +403,12 @@ func TestRecordingLogger_Error(t *testing.T) {
 		fields map[string]any
 	}
 	tests := map[string]struct {
-		tl RecordingLogger
+		tl *output.RecordingLogger
 		args
 		want string
 	}{
 		"simple test": {
-			tl: RecordingLogger{writer: &bytes.Buffer{}},
+			tl: output.NewRecordingLogger(),
 			args: args{
 				msg:    "simple message",
 				fields: map[string]any{"f1": 1, "f2": true, "f3": "v"},
@@ -404,7 +419,7 @@ func TestRecordingLogger_Error(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			tt.tl.Error(tt.args.msg, tt.args.fields)
-			if got := tt.tl.writer.String(); got != tt.want {
+			if got := tt.tl.String(); got != tt.want {
 				t.Errorf("RecordingLogger.Error() got %q want %q", got, tt.want)
 			}
 		})
@@ -417,12 +432,12 @@ func TestRecordingLogger_Panic(t *testing.T) {
 		fields map[string]any
 	}
 	tests := map[string]struct {
-		tl RecordingLogger
+		tl *output.RecordingLogger
 		args
 		want string
 	}{
 		"simple test": {
-			tl: RecordingLogger{writer: &bytes.Buffer{}},
+			tl: output.NewRecordingLogger(),
 			args: args{
 				msg:    "simple message",
 				fields: map[string]any{"f1": 1, "f2": true, "f3": "v"},
@@ -433,7 +448,7 @@ func TestRecordingLogger_Panic(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			tt.tl.Panic(tt.args.msg, tt.args.fields)
-			if got := tt.tl.writer.String(); got != tt.want {
+			if got := tt.tl.String(); got != tt.want {
 				t.Errorf("RecordingLogger.Panic() got %q want %q", got, tt.want)
 			}
 		})
@@ -446,12 +461,12 @@ func TestRecordingLogger_Fatal(t *testing.T) {
 		fields map[string]any
 	}
 	tests := map[string]struct {
-		tl RecordingLogger
+		tl *output.RecordingLogger
 		args
 		want string
 	}{
 		"simple test": {
-			tl: RecordingLogger{writer: &bytes.Buffer{}},
+			tl: output.NewRecordingLogger(),
 			args: args{
 				msg:    "simple message",
 				fields: map[string]any{"f1": 1, "f2": true, "f3": "v"},
@@ -462,7 +477,7 @@ func TestRecordingLogger_Fatal(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			tt.tl.Fatal(tt.args.msg, tt.args.fields)
-			if got := tt.tl.writer.String(); got != tt.want {
+			if got := tt.tl.String(); got != tt.want {
 				t.Errorf("RecordingLogger.Fatal() got %q want %q", got, tt.want)
 			}
 		})
@@ -471,9 +486,9 @@ func TestRecordingLogger_Fatal(t *testing.T) {
 
 func TestRecorder_IsConsoleTTY(t *testing.T) {
 	tests := map[string]struct {
-		r    *Recorder
+		r    *output.Recorder
 		want bool
-	}{"simple": {r: NewRecorder(), want: false}}
+	}{"simple": {r: output.NewRecorder(), want: false}}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			if got := tt.r.IsConsoleTTY(); got != tt.want {
@@ -485,9 +500,9 @@ func TestRecorder_IsConsoleTTY(t *testing.T) {
 
 func TestRecorder_IsErrorTTY(t *testing.T) {
 	tests := map[string]struct {
-		r    *Recorder
+		r    *output.Recorder
 		want bool
-	}{"simple": {r: NewRecorder(), want: false}}
+	}{"simple": {r: output.NewRecorder(), want: false}}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			if got := tt.r.IsErrorTTY(); got != tt.want {
@@ -509,7 +524,8 @@ func Test_Recorder_IncrementTab(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			r := &Recorder{tab: tt.initialTab}
+			r := &output.Recorder{}
+			r.IncrementTab(tt.initialTab)
 			r.IncrementTab(tt.t)
 			if got := r.Tab(); got != tt.want {
 				t.Errorf("Recorder.IncrementTab got %d want %d", got, tt.want)
@@ -529,7 +545,8 @@ func Test_Recorder_DecrementTab(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			r := &Recorder{tab: tt.initialTab}
+			r := &output.Recorder{}
+			r.IncrementTab(tt.initialTab)
 			r.DecrementTab(tt.t)
 			if got := r.Tab(); got != tt.want {
 				t.Errorf("Recorder.DecrementTab got %d want %d", got, tt.want)

@@ -139,7 +139,7 @@ All use _fmt.Printf_ to process the format string and arguments, but the
 
 1. Remove all trailing newlines.
 2. Remove redundant end-of-sentence punctuation characters (_period_,
-   _exclamation point_, and _question mark_), leaving only the last occuring
+   _exclamation point_, and _question mark_), leaving only the last occurring
    such character. Append a period if there was no end-of-sentence punctuation
    character in the first place. This alleviates problems where the last value
    in the field of arguments ends with an end-of-sentence punctuation character,

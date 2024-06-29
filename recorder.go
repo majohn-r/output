@@ -97,7 +97,7 @@ func (r *Recorder) ErrorWriter() io.Writer {
 
 // WriteCanonicalError records data written as an error.
 func (r *Recorder) WriteCanonicalError(format string, a ...any) {
-	fmt.Fprint(r.errorWriter, canonicalFormat(format, a...))
+	_, _ = fmt.Fprint(r.errorWriter, canonicalFormat(format, a...))
 }
 
 // WriteError records un-edited data written as an error.
@@ -200,6 +200,10 @@ func (r *Recorder) Report(t TestingReporter, header string, w WantedRecording) {
 // NewRecordingLogger returns a recording implementation of Logger.
 func NewRecordingLogger() *RecordingLogger {
 	return &RecordingLogger{writer: &bytes.Buffer{}}
+}
+
+func (rl *RecordingLogger) String() string {
+	return rl.writer.String()
 }
 
 // Trace records a trace log message.
