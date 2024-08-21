@@ -2,6 +2,7 @@ package output
 
 import (
 	"fmt"
+	"strings"
 	"unicode"
 )
 
@@ -25,12 +26,7 @@ func fixTerminalPunctuation(s string) string {
 	terminalPunctuation := "."
 	if isSentenceTerminatingPunctuation(lastChar) {
 		terminalPunctuation = lastChar
-		// remove the punctuation at the end
-		s, lastChar = lastCharacter(s)
-		// look for more and remove them too
-		for s != "" && isSentenceTerminatingPunctuation(lastChar) {
-			s, lastChar = lastCharacter(s)
-		}
+		s = strings.TrimRight(s, ".!?")
 	}
 	s += terminalPunctuation
 	return s
@@ -47,10 +43,7 @@ func lastCharacter(s string) (resultS, lastChar string) {
 }
 
 func stripTrailingNewlines(s string) string {
-	for s != "" && s[len(s)-1:] == "\n" {
-		s = s[:len(s)-1]
-	}
-	return s
+	return strings.TrimRight(s, "\n")
 }
 
 func capitalize(s string) string {

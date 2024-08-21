@@ -1,6 +1,6 @@
 module github.com/majohn-r/output
 
-go 1.22
+go 1.23
 
 require github.com/mattn/go-isatty v0.0.20
 
