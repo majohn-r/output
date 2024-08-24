@@ -6,6 +6,8 @@ import (
 	"unicode"
 )
 
+const sentenceTerminatingCharacters = ".!?:"
+
 func canonicalFormat(format string, a ...any) string {
 	s := fmt.Sprintf(format, a...)
 	return renderCanonical(s)
@@ -26,7 +28,7 @@ func fixTerminalPunctuation(s string) string {
 	terminalPunctuation := "."
 	if isSentenceTerminatingPunctuation(lastChar) {
 		terminalPunctuation = lastChar
-		s = strings.TrimRight(s, ".!?")
+		s = strings.TrimRight(s, sentenceTerminatingCharacters)
 	}
 	s += terminalPunctuation
 	return s
@@ -59,9 +61,10 @@ func capitalize(s string) string {
 }
 
 func isSentenceTerminatingPunctuation(s string) bool {
-	switch s {
-	case ".", "!", "?":
-		return true
+	for _, r := range s {
+		if strings.ContainsRune(sentenceTerminatingCharacters, r) {
+			return true
+		}
 	}
 	return false
 }

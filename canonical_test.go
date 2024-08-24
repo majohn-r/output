@@ -179,7 +179,7 @@ func Test_isSentenceTerminatingPunctuation(t *testing.T) {
 		"exclamation point":    {s: "!", want: true},
 		"comma":                {s: ",", want: false},
 		"semicolon":            {s: ";", want: false},
-		"colon":                {s: ":", want: false},
+		"colon":                {s: ":", want: true},
 		"en dash":              {s: "\u2013", want: false},
 		"em dash":              {s: "—", want: false},
 		"hyphen":               {s: "-", want: false},
