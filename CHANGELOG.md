@@ -10,6 +10,20 @@ Key to symbols
 - 😒 change is invisible to the user
 - 🆕 new feature
 
+## v0.7.0
+
+_release `2024-08-25`_
+
+- 🆕add support for lists (bulleted and numeric) in the console and error channels; adds new functions to the **Bus**
+interface:
+    - **BeginConsoleList(bool)**
+    - **EndConsoleList()**
+    - **ConsoleListDecorator() \*ListDecorator**
+    - **BeginErrorList(bool)**
+    - **EndErrorList()**
+    - **ErrorListDecorator() \*ListDecorator**
+
+
 ## v0.6.0
 
 _release `2024-08-24`_

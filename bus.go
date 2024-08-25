@@ -33,6 +33,12 @@ type (
 		IncrementTab(uint8)
 		// DecrementTab decreases the current tab setting; will not go below 0
 		DecrementTab(uint8)
+		BeginConsoleList(bool)
+		EndConsoleList()
+		ConsoleListDecorator() *ListDecorator
+		BeginErrorList(bool)
+		EndErrorList()
+		ErrorListDecorator() *ListDecorator
 	}
 
 	// Logger defines a set of functions for writing to a log at various log
@@ -48,13 +54,15 @@ type (
 	}
 
 	bus struct {
-		consoleWriter io.Writer
-		errorWriter   io.Writer
-		logger        Logger
-		performWrites bool
-		consoleTTY    bool
-		errorTTY      bool
-		tab           uint8
+		consoleWriter        io.Writer
+		errorWriter          io.Writer
+		logger               Logger
+		performWrites        bool
+		consoleTTY           bool
+		errorTTY             bool
+		tab                  uint8
+		consoleListDecorator *ListDecorator
+		errorListDecorator   *ListDecorator
 	}
 )
 
@@ -93,13 +101,15 @@ func isTTY(w io.Writer) (b bool) {
 // the console and error writers and the Logger.
 func NewCustomBus(c, e io.Writer, l Logger) Bus {
 	return &bus{
-		consoleWriter: c,
-		errorWriter:   e,
-		logger:        l,
-		performWrites: true,
-		consoleTTY:    isTTY(c),
-		errorTTY:      isTTY(e),
-		tab:           0,
+		consoleWriter:        c,
+		errorWriter:          e,
+		logger:               l,
+		performWrites:        true,
+		consoleTTY:           isTTY(c),
+		errorTTY:             isTTY(e),
+		tab:                  0,
+		consoleListDecorator: newListDecorator(false, false),
+		errorListDecorator:   newListDecorator(false, false),
 	}
 }
 
@@ -122,7 +132,12 @@ func (b *bus) Log(l Level, msg string, args map[string]any) {
 		case Fatal:
 			b.logger.Fatal(msg, args)
 		default:
-			b.WriteCanonicalError("programming error: call to bus.Log() with invalid level value %d; message: '%s', args: '%v", l, msg, args)
+			b.WriteCanonicalError(
+				"programming error: call to bus.Log() with invalid level value %d; message: '%s', args: '%v",
+				l,
+				msg,
+				args,
+			)
 		}
 	}
 }
@@ -140,28 +155,28 @@ func (b *bus) ErrorWriter() io.Writer {
 // WriteCanonicalError writes error output in a canonical format.
 func (b *bus) WriteCanonicalError(format string, a ...any) {
 	if b.performWrites {
-		_, _ = fmt.Fprint(b.errorWriter, canonicalFormat(format, a...))
+		_, _ = fmt.Fprint(b.errorWriter, b.errorListDecorator.Decorator()+canonicalFormat(format, a...))
 	}
 }
 
 // WriteError writes unedited error output.
 func (b *bus) WriteError(format string, a ...any) {
 	if b.performWrites {
-		fmt.Fprintf(b.errorWriter, format, a...)
+		fmt.Fprintf(b.errorWriter, b.errorListDecorator.Decorator()+format, a...)
 	}
 }
 
 // WriteCanonicalConsole writes output to a console in a canonical format.
 func (b *bus) WriteCanonicalConsole(format string, a ...any) {
 	if b.performWrites {
-		writeTabbedContent(b.consoleWriter, b.tab, canonicalFormat(format, a...))
+		writeTabbedContent(b.consoleWriter, b.tab, b.consoleListDecorator.Decorator()+canonicalFormat(format, a...))
 	}
 }
 
 // WriteConsole writes output to a console.
 func (b *bus) WriteConsole(format string, a ...any) {
 	if b.performWrites {
-		writeTabbedContent(b.consoleWriter, b.tab, fmt.Sprintf(format, a...))
+		writeTabbedContent(b.consoleWriter, b.tab, fmt.Sprintf(b.consoleListDecorator.Decorator()+format, a...))
 	}
 }
 
@@ -184,6 +199,36 @@ func addTab(originalTab, increment uint8) uint8 {
 // DecrementTab decrements the tab setting by the specified number of spaces
 func (b *bus) DecrementTab(t uint8) {
 	b.tab = subtractTab(b.tab, t)
+}
+
+// BeginConsoleList initiates console listing
+func (b *bus) BeginConsoleList(numeric bool) {
+	b.consoleListDecorator = newListDecorator(true, numeric)
+}
+
+// EndConsoleList terminates console listing
+func (b *bus) EndConsoleList() {
+	b.consoleListDecorator = newListDecorator(false, false)
+}
+
+// ConsoleListDecorator makes the console list decorator available
+func (b *bus) ConsoleListDecorator() *ListDecorator {
+	return b.consoleListDecorator
+}
+
+// BeginErrorList initiates error listing
+func (b *bus) BeginErrorList(numeric bool) {
+	b.errorListDecorator = newListDecorator(true, numeric)
+}
+
+// EndErrorList terminates error listing
+func (b *bus) EndErrorList() {
+	b.errorListDecorator = newListDecorator(false, false)
+}
+
+// ErrorListDecorator makes the error list decorator available
+func (b *bus) ErrorListDecorator() *ListDecorator {
+	return b.errorListDecorator
 }
 
 func subtractTab(originalTab, decrement uint8) uint8 {

@@ -35,3 +35,61 @@ func TestNewDefaultBus(t *testing.T) {
 		})
 	}
 }
+
+func Test_bus_BeginConsoleList(t *testing.T) {
+	tests := map[string]struct {
+		numeric bool
+		want    string
+	}{
+		"bullet": {
+			numeric: false,
+			want:    "● ",
+		},
+		"numeric": {
+			numeric: true,
+			want:    " 1. ",
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			b := output.NewCustomBus(os.Stdout, os.Stderr, output.NilLogger{})
+			b.BeginConsoleList(tt.numeric)
+			if got := b.ConsoleListDecorator().Decorator(); got != tt.want {
+				t.Errorf("BeginConsoleList() = %v, want %v", got, tt.want)
+			}
+			b.EndConsoleList()
+			if got := b.ConsoleListDecorator().Decorator(); got != "" {
+				t.Errorf("EndConsoleList() = %v, want %v", got, "")
+			}
+		})
+	}
+}
+
+func Test_bus_BeginErrorList(t *testing.T) {
+	tests := map[string]struct {
+		numeric bool
+		want    string
+	}{
+		"bullet": {
+			numeric: false,
+			want:    "● ",
+		},
+		"numeric": {
+			numeric: true,
+			want:    " 1. ",
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			b := output.NewCustomBus(os.Stdout, os.Stderr, output.NilLogger{})
+			b.BeginErrorList(tt.numeric)
+			if got := b.ErrorListDecorator().Decorator(); got != tt.want {
+				t.Errorf("BeginErrorList() = %v, want %v", got, tt.want)
+			}
+			b.EndErrorList()
+			if got := b.ErrorListDecorator().Decorator(); got != "" {
+				t.Errorf("EndErrorList() = %v, want %v", got, "")
+			}
+		})
+	}
+}

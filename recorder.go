@@ -15,10 +15,12 @@ type (
 	// needs a Bus) with an instance of Recorder and then verify that the code
 	// produces the expected console, error, and log output.
 	Recorder struct {
-		consoleWriter *bytes.Buffer
-		errorWriter   *bytes.Buffer
-		logger        *RecordingLogger
-		tab           uint8
+		consoleWriter        *bytes.Buffer
+		errorWriter          *bytes.Buffer
+		logger               *RecordingLogger
+		tab                  uint8
+		consoleListDecorator *ListDecorator
+		errorListDecorator   *ListDecorator
 	}
 
 	// WantedRecording is intended to be used in unit tests as part of the test
@@ -56,10 +58,12 @@ type (
 // NewRecorder returns a recording implementation of Bus.
 func NewRecorder() *Recorder {
 	return &Recorder{
-		consoleWriter: &bytes.Buffer{},
-		errorWriter:   &bytes.Buffer{},
-		logger:        NewRecordingLogger(),
-		tab:           0,
+		consoleWriter:        &bytes.Buffer{},
+		errorWriter:          &bytes.Buffer{},
+		logger:               NewRecordingLogger(),
+		tab:                  0,
+		consoleListDecorator: newListDecorator(false, false),
+		errorListDecorator:   newListDecorator(false, false),
 	}
 }
 
@@ -81,7 +85,12 @@ func (r *Recorder) Log(l Level, msg string, fields map[string]any) {
 	case Fatal:
 		r.logger.Fatal(msg, fields)
 	default:
-		r.WriteCanonicalError("programming error: call to Recorder.Log() with invalid level value %d; message: '%s', args: '%v", l, msg, fields)
+		r.WriteCanonicalError(
+			"programming error: call to Recorder.Log() with invalid level value %d; message: '%s', args: '%v",
+			l,
+			msg,
+			fields,
+		)
 	}
 }
 
@@ -97,22 +106,22 @@ func (r *Recorder) ErrorWriter() io.Writer {
 
 // WriteCanonicalError records data written as an error.
 func (r *Recorder) WriteCanonicalError(format string, a ...any) {
-	_, _ = fmt.Fprint(r.errorWriter, canonicalFormat(format, a...))
+	_, _ = fmt.Fprint(r.errorWriter, r.errorListDecorator.Decorator()+canonicalFormat(format, a...))
 }
 
 // WriteError records un-edited data written as an error.
 func (r *Recorder) WriteError(format string, a ...any) {
-	fmt.Fprintf(r.errorWriter, format, a...)
+	fmt.Fprintf(r.errorWriter, r.errorListDecorator.Decorator()+format, a...)
 }
 
 // WriteCanonicalConsole records data written to the console.
 func (r *Recorder) WriteCanonicalConsole(format string, a ...any) {
-	writeTabbedContent(r.consoleWriter, r.tab, canonicalFormat(format, a...))
+	writeTabbedContent(r.consoleWriter, r.tab, r.consoleListDecorator.Decorator()+canonicalFormat(format, a...))
 }
 
 // WriteConsole records data written to the console.
 func (r *Recorder) WriteConsole(format string, a ...any) {
-	writeTabbedContent(r.consoleWriter, r.tab, fmt.Sprintf(format, a...))
+	writeTabbedContent(r.consoleWriter, r.tab, fmt.Sprintf(r.consoleListDecorator.Decorator()+format, a...))
 }
 
 // IncrementTab increments the tab setting by the specified number of spaces
@@ -128,6 +137,36 @@ func (r *Recorder) DecrementTab(t uint8) {
 // Tab returns the current tab setting
 func (r *Recorder) Tab() uint8 {
 	return r.tab
+}
+
+// BeginConsoleList initiates console listing
+func (r *Recorder) BeginConsoleList(numeric bool) {
+	r.consoleListDecorator = newListDecorator(true, numeric)
+}
+
+// EndConsoleList terminates console listing
+func (r *Recorder) EndConsoleList() {
+	r.consoleListDecorator = newListDecorator(false, false)
+}
+
+// ConsoleListDecorator makes the console list decorator available
+func (r *Recorder) ConsoleListDecorator() *ListDecorator {
+	return r.consoleListDecorator
+}
+
+// BeginErrorList initiates error listing
+func (r *Recorder) BeginErrorList(numeric bool) {
+	r.errorListDecorator = newListDecorator(true, numeric)
+}
+
+// EndErrorList terminates error listing
+func (r *Recorder) EndErrorList() {
+	r.errorListDecorator = newListDecorator(false, false)
+}
+
+// ErrorListDecorator makes the error list decorator available
+func (r *Recorder) ErrorListDecorator() *ListDecorator {
+	return r.errorListDecorator
 }
 
 // ConsoleOutput returns the data written as console output.

@@ -18,6 +18,8 @@ func TestNewRecorder(t *testing.T) {
 		logMessage      string
 		logArgs         map[string]any
 		tab             uint8
+		enableList      bool
+		numericList     bool
 		output.WantedRecording
 	}{
 		"non-canonical test": {
@@ -28,9 +30,43 @@ func TestNewRecorder(t *testing.T) {
 			logMessage:  "hello!",
 			logArgs:     map[string]any{"field": "value"},
 			tab:         0,
+			enableList:  false,
+			numericList: false,
 			WantedRecording: output.WantedRecording{
 				Console: "hello 42 true",
 				Error:   "24 false bye",
+				Log:     "level='error' field='value' msg='hello!'\n",
+			},
+		},
+		"non-canonical test with bulleted list": {
+			consoleFmt:  "%s %d %t",
+			consoleArgs: []any{"hello", 42, true},
+			errorFmt:    "%d %t %s",
+			errorArgs:   []any{24, false, "bye"},
+			logMessage:  "hello!",
+			logArgs:     map[string]any{"field": "value"},
+			tab:         0,
+			enableList:  true,
+			numericList: false,
+			WantedRecording: output.WantedRecording{
+				Console: "● hello 42 true",
+				Error:   "● 24 false bye",
+				Log:     "level='error' field='value' msg='hello!'\n",
+			},
+		},
+		"non-canonical test with numeric list": {
+			consoleFmt:  "%s %d %t",
+			consoleArgs: []any{"hello", 42, true},
+			errorFmt:    "%d %t %s",
+			errorArgs:   []any{24, false, "bye"},
+			logMessage:  "hello!",
+			logArgs:     map[string]any{"field": "value"},
+			tab:         0,
+			enableList:  true,
+			numericList: true,
+			WantedRecording: output.WantedRecording{
+				Console: " 1. hello 42 true",
+				Error:   " 1. 24 false bye",
 				Log:     "level='error' field='value' msg='hello!'\n",
 			},
 		},
@@ -43,9 +79,45 @@ func TestNewRecorder(t *testing.T) {
 			logMessage:      "hello!",
 			logArgs:         map[string]any{"field": "value"},
 			tab:             0,
+			enableList:      false,
+			numericList:     false,
 			WantedRecording: output.WantedRecording{
 				Console: "Hello 42 true.\n",
 				Error:   "24 false bye.\n",
+				Log:     "level='error' field='value' msg='hello!'\n",
+			},
+		},
+		"canonical test with bulleted list": {
+			canonicalWrites: true,
+			consoleFmt:      "%s %d %t",
+			consoleArgs:     []any{"hello", 42, true},
+			errorFmt:        "%d %t %s",
+			errorArgs:       []any{24, false, "bye"},
+			logMessage:      "hello!",
+			logArgs:         map[string]any{"field": "value"},
+			tab:             0,
+			enableList:      true,
+			numericList:     false,
+			WantedRecording: output.WantedRecording{
+				Console: "● Hello 42 true.\n",
+				Error:   "● 24 false bye.\n",
+				Log:     "level='error' field='value' msg='hello!'\n",
+			},
+		},
+		"canonical test with numeric list": {
+			canonicalWrites: true,
+			consoleFmt:      "%s %d %t",
+			consoleArgs:     []any{"hello", 42, true},
+			errorFmt:        "%d %t %s",
+			errorArgs:       []any{24, false, "bye"},
+			logMessage:      "hello!",
+			logArgs:         map[string]any{"field": "value"},
+			tab:             0,
+			enableList:      true,
+			numericList:     true,
+			WantedRecording: output.WantedRecording{
+				Console: " 1. Hello 42 true.\n",
+				Error:   " 1. 24 false bye.\n",
 				Log:     "level='error' field='value' msg='hello!'\n",
 			},
 		},
@@ -57,9 +129,43 @@ func TestNewRecorder(t *testing.T) {
 			logMessage:  "hello!",
 			logArgs:     map[string]any{"field": "value"},
 			tab:         6,
+			enableList:  false,
+			numericList: false,
 			WantedRecording: output.WantedRecording{
 				Console: "      hello 42 true",
 				Error:   "24 false bye",
+				Log:     "level='error' field='value' msg='hello!'\n",
+			},
+		},
+		"non-canonical test with tab and bulleted list": {
+			consoleFmt:  "%s %d %t",
+			consoleArgs: []any{"hello", 42, true},
+			errorFmt:    "%d %t %s",
+			errorArgs:   []any{24, false, "bye"},
+			logMessage:  "hello!",
+			logArgs:     map[string]any{"field": "value"},
+			tab:         6,
+			enableList:  true,
+			numericList: false,
+			WantedRecording: output.WantedRecording{
+				Console: "      ● hello 42 true",
+				Error:   "● 24 false bye",
+				Log:     "level='error' field='value' msg='hello!'\n",
+			},
+		},
+		"non-canonical test with tab and numeric list": {
+			consoleFmt:  "%s %d %t",
+			consoleArgs: []any{"hello", 42, true},
+			errorFmt:    "%d %t %s",
+			errorArgs:   []any{24, false, "bye"},
+			logMessage:  "hello!",
+			logArgs:     map[string]any{"field": "value"},
+			tab:         6,
+			enableList:  true,
+			numericList: true,
+			WantedRecording: output.WantedRecording{
+				Console: "       1. hello 42 true",
+				Error:   " 1. 24 false bye",
 				Log:     "level='error' field='value' msg='hello!'\n",
 			},
 		},
@@ -72,9 +178,45 @@ func TestNewRecorder(t *testing.T) {
 			logMessage:      "hello!",
 			logArgs:         map[string]any{"field": "value"},
 			tab:             4,
+			enableList:      false,
+			numericList:     false,
 			WantedRecording: output.WantedRecording{
 				Console: "    Hello 42 true.\n",
 				Error:   "24 false bye.\n",
+				Log:     "level='error' field='value' msg='hello!'\n",
+			},
+		},
+		"canonical test with tab and bulleted list": {
+			canonicalWrites: true,
+			consoleFmt:      "%s %d %t",
+			consoleArgs:     []any{"hello", 42, true},
+			errorFmt:        "%d %t %s",
+			errorArgs:       []any{24, false, "bye"},
+			logMessage:      "hello!",
+			logArgs:         map[string]any{"field": "value"},
+			tab:             4,
+			enableList:      true,
+			numericList:     false,
+			WantedRecording: output.WantedRecording{
+				Console: "    ● Hello 42 true.\n",
+				Error:   "● 24 false bye.\n",
+				Log:     "level='error' field='value' msg='hello!'\n",
+			},
+		},
+		"canonical test with tab and numeric list": {
+			canonicalWrites: true,
+			consoleFmt:      "%s %d %t",
+			consoleArgs:     []any{"hello", 42, true},
+			errorFmt:        "%d %t %s",
+			errorArgs:       []any{24, false, "bye"},
+			logMessage:      "hello!",
+			logArgs:         map[string]any{"field": "value"},
+			tab:             4,
+			enableList:      true,
+			numericList:     true,
+			WantedRecording: output.WantedRecording{
+				Console: "     1. Hello 42 true.\n",
+				Error:   " 1. 24 false bye.\n",
 				Log:     "level='error' field='value' msg='hello!'\n",
 			},
 		},
@@ -93,6 +235,10 @@ func TestNewRecorder(t *testing.T) {
 			if o.ErrorWriter() == nil {
 				t.Errorf("NewRecorder() error writer is nil")
 			}
+			if tt.enableList {
+				o.BeginConsoleList(tt.numericList)
+				o.BeginErrorList(tt.numericList)
+			}
 			if tt.canonicalWrites {
 				o.WriteCanonicalConsole(tt.consoleFmt, tt.consoleArgs...)
 				o.WriteCanonicalError(tt.errorFmt, tt.errorArgs...)
@@ -100,6 +246,8 @@ func TestNewRecorder(t *testing.T) {
 				o.WriteConsole(tt.consoleFmt, tt.consoleArgs...)
 				o.WriteError(tt.errorFmt, tt.errorArgs...)
 			}
+			o.EndConsoleList()
+			o.EndErrorList()
 			o.Log(output.Error, tt.logMessage, tt.logArgs)
 			if got := o.ConsoleOutput(); got != tt.WantedRecording.Console {
 				t.Errorf("NewRecorder().ConsoleOutput() = %v, want %v", got, tt.WantedRecording.Console)
@@ -263,7 +411,10 @@ func TestRecorder_Log(t *testing.T) {
 				msg:  "hello",
 				args: map[string]any{"f": "v"},
 			},
-			Error: "Programming error: call to Recorder.Log() with invalid level value 7; message: 'hello', args: 'map[f:v].\n",
+			Error: "" +
+				"Programming error: call to Recorder.Log() with invalid level value 7; " +
+				"message: 'hello', " +
+				"args: 'map[f:v].\n",
 		},
 	}
 	for name, tt := range tests {
@@ -550,6 +701,64 @@ func Test_Recorder_DecrementTab(t *testing.T) {
 			r.DecrementTab(tt.t)
 			if got := r.Tab(); got != tt.want {
 				t.Errorf("Recorder.DecrementTab got %d want %d", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestRecorder_BeginConsoleList(t *testing.T) {
+	tests := map[string]struct {
+		numeric bool
+		want    string
+	}{
+		"bullet": {
+			numeric: false,
+			want:    "● ",
+		},
+		"numeric": {
+			numeric: true,
+			want:    " 1. ",
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			r := output.NewRecorder()
+			r.BeginConsoleList(tt.numeric)
+			if got := r.ConsoleListDecorator().Decorator(); got != tt.want {
+				t.Errorf("BeginConsoleList() = %v, want %v", got, tt.want)
+			}
+			r.EndConsoleList()
+			if got := r.ConsoleListDecorator().Decorator(); got != "" {
+				t.Errorf("EndConsoleList() = %v, want %v", got, "")
+			}
+		})
+	}
+}
+
+func TestRecorder_BeginErrorList(t *testing.T) {
+	tests := map[string]struct {
+		numeric bool
+		want    string
+	}{
+		"bullet": {
+			numeric: false,
+			want:    "● ",
+		},
+		"numeric": {
+			numeric: true,
+			want:    " 1. ",
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			r := output.NewRecorder()
+			r.BeginErrorList(tt.numeric)
+			if got := r.ErrorListDecorator().Decorator(); got != tt.want {
+				t.Errorf("BeginErrorList() = %v, want %v", got, tt.want)
+			}
+			r.EndErrorList()
+			if got := r.ErrorListDecorator().Decorator(); got != "" {
+				t.Errorf("EndErrorList() = %v, want %v", got, "")
 			}
 		})
 	}
