@@ -4,11 +4,30 @@ This project uses [semantic versioning](https://semver.org/); be aware that, unt
 [this proviso](https://semver.org/#spec-item-4) applies.
 
 Key to symbols
+
 - ❗ breaking change
 - 🐛 bug fix
 - ⚠️ change in behavior, may surprise the user
 - 😒 change is invisible to the user
 - 🆕 new feature
+
+## v0.8.0
+
+_release `2024-08-26`_
+
+- 🆕add new functions to the `Bus` interface:
+
+  - `ConsolePrintln(string)`
+  - `ConsolePrintf(string, ...any)`
+  - `ErrorPrintln(string)`
+  - `ErrorPrintf(string, ...any)`
+
+- ⚠️deprecated these functions in the `Bus` interface:
+
+  - `WriteCanonicalConsole(string, ...any)` (use `ConsolePrintln` or `ConsolePrintf` instead)
+  - `WriteConsole(string, ...any)` (use `ConsolePrintln` or `ConsolePrintf` instead)
+  - `WriteCanonicalError(string, ...any)` (use `ErrorPrintln` or `ErrorPrintf` instead)
+  - `WriteError](string, ...any)` (use `ErrorPrintln` or `ErrorPrintf` instead)
 
 ## v0.7.0
 
@@ -16,12 +35,13 @@ _release `2024-08-25`_
 
 - 🆕add support for lists (bulleted and numeric) in the console and error channels; adds new functions to the **Bus**
 interface:
-    - **BeginConsoleList(bool)**
-    - **EndConsoleList()**
-    - **ConsoleListDecorator() \*ListDecorator**
-    - **BeginErrorList(bool)**
-    - **EndErrorList()**
-    - **ErrorListDecorator() \*ListDecorator**
+
+    - `BeginConsoleList(bool)`
+    - `EndConsoleList()`
+    - `ConsoleListDecorator() *ListDecorator`
+    - `BeginErrorList(bool)`
+    - `EndErrorList()`
+    - `ErrorListDecorator() *ListDecorator`
 
 
 ## v0.6.0
@@ -46,25 +66,25 @@ _release `2024-06-29`_
 
 _release `2024-06-13`_
 
-- 🐛improved output of file and line number in ***Recorder.Report()** output
+- 🐛improved output of file and line number in `*Recorder.Report()` output
 
 ## v0.5.1
 
 _release `2024-06-13`_
 
-- 🆕add file and line number to ***Recorder.Report()** output
+- 🆕add file and line number to `*Recorder.Report()` output
 
 ## v0.5.0
 
 _release `2024-05-30`_
 
-- 🆕add **Tab()**, **IncrementTab()**, and **DecrementTab()** functions to **Bus** interface
+- 🆕add `Tab() uint8`, `IncrementTab(uint8)`, and `DecrementTab(uint8)` functions to `Bus` interface
 
 ## v0.4.0
 
 _release `2024-05-23`_
 
-- 🆕add **Report()** method to ***Recorder** receiver
+- 🆕add `(r *Recorder) Report(TestingReporter, string, WantedRecording)` function
 
 ## v0.3.4
 
@@ -94,13 +114,13 @@ _release `2024-01-04`_
 
 _release `2023-11-14`_
 
-- 🆕add **IsConsoleTTY()** and **IsErrorTTY()** to the **Bus** interface
+- 🆕add `IsConsoleTTY() bool` and `IsErrorTTY() bool` functions to the `Bus` interface
 
 ## v0.2.0
 
 _release `2023-11-04`_
 
-- ❗remove **LogWriter** from the **Bus** interface
+- ❗remove `LogWriter() Logger` function from the `Bus` interface
 
 ## v0.1.3
 

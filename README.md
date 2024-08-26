@@ -34,8 +34,7 @@ go get github.com/majohn-r/output
 
 ## Basic Usage
 
-In main, create a **Bus** implementation and a **Logger** implementation. Here
-is an example that uses the
+In main, create a **Bus** implementation and a **Logger** implementation. Here is an example that uses the
 [https://github.com/sirupsen/logrus](https://github.com/sirupsen/logrus) library
 to implement logging:
 
@@ -124,6 +123,8 @@ func Test_runProgramLogic {
 
 ## Canonical Output
 
+**NOTE: THIS SECTION DESCRIBES DEPRECATED CODE**
+
 Long ago, I was taught that messages intended to be read by users should have a
 number of features, among them _clarity_. One way to achieve clarity is to
 output messages as properly written sentences. In that vein, then, the **Bus**
@@ -177,23 +178,18 @@ go here:
 
 These are the minimum standards:
 
-1. There must be no lint issues - run [`./build.sh lint`] to verify.
-2. All unit tests must pass - run [`./build.sh tests`] to verify.
-3. Code coverage must be at 100% - run [`./build.sh coverage`] to verify.
-4. The code must be correctly formatted - run [`./build.sh format`] to verify.
+1. run [`./build.sh preCommit`] with no errors and 100% coverage on tests.
+2. update CHANGELOG.md with a brief description of the change(s).
 
 ### Commit message
 
 Reference an issue in the first line of the commit message:
 
 ```text
-[#1234] fix that nagging problem
+(#1234) fix that nagging problem
 ```
 
 In the example above, **1234** is the issue number this commit reference.
-
-After the first line in the commit message, add a blank line, followed by
-relevant details.
 
 This library adheres to [Semantic Versioning](https://semver.org/) standards, so
 it will be very helpful if the details in the commit message make clear whether

@@ -104,6 +104,26 @@ func (r *Recorder) ErrorWriter() io.Writer {
 	return r.errorWriter
 }
 
+// ErrorPrintln prints a message to the error channel, terminated by a newline
+func (r *Recorder) ErrorPrintln(msg string) {
+	doPrintln(r.errorWriter, r.errorListDecorator, msg)
+}
+
+// ErrorPrintf prints a message with arguments to the error channel
+func (r *Recorder) ErrorPrintf(format string, args ...any) {
+	doPrintf(r.errorWriter, r.errorListDecorator, format, args...)
+}
+
+// ConsolePrintln prints a message to the error channel, terminated by a newline
+func (r *Recorder) ConsolePrintln(msg string) {
+	writeTabbedContent(r.consoleWriter, r.tab, doSprintln(r.consoleListDecorator, msg))
+}
+
+// ConsolePrintf prints a message with arguments to the error channel
+func (r *Recorder) ConsolePrintf(format string, args ...any) {
+	writeTabbedContent(r.consoleWriter, r.tab, doSprintf(r.consoleListDecorator, format, args...))
+}
+
 // WriteCanonicalError records data written as an error.
 func (r *Recorder) WriteCanonicalError(format string, a ...any) {
 	_, _ = fmt.Fprint(r.errorWriter, r.errorListDecorator.Decorator()+canonicalFormat(format, a...))

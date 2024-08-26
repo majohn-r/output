@@ -102,6 +102,104 @@ func Test_bus_Log(t *testing.T) {
 	}
 }
 
+func Test_bus_ErrorPrintf(t *testing.T) {
+	type args struct {
+		format string
+		a      []any
+	}
+	tests := map[string]struct {
+		args
+		enableList  bool
+		numericList bool
+		want        string
+	}{
+		"broad test": {
+			args: args{
+				format: "test format %d %q %v..?!..?\n\n\n\n",
+				a:      []any{25, "foo", 1.245},
+			},
+			enableList:  false,
+			numericList: false,
+			want:        "test format 25 \"foo\" 1.245..?!..?\n\n\n\n",
+		},
+		"broad test with bullets": {
+			args: args{
+				format: "test format %d %q %v..?!..?\n\n\n\n",
+				a:      []any{25, "foo", 1.245},
+			},
+			enableList:  true,
+			numericList: false,
+			want:        "● test format 25 \"foo\" 1.245..?!..?\n\n\n\n",
+		},
+		"broad test with numeric list": {
+			args: args{
+				format: "test format %d %q %v..?!..?\n\n\n\n",
+				a:      []any{25, "foo", 1.245},
+			},
+			enableList:  true,
+			numericList: true,
+			want:        " 1. test format 25 \"foo\" 1.245..?!..?\n\n\n\n",
+		},
+		"narrow test": {
+			args: args{
+				format: "1. test format %d %q %v",
+				a:      []any{25, "foo", 1.245},
+			},
+			enableList:  false,
+			numericList: false,
+			want:        "1. test format 25 \"foo\" 1.245",
+		},
+		"narrow test with bullets": {
+			args: args{
+				format: "1. test format %d %q %v",
+				a:      []any{25, "foo", 1.245},
+			},
+			enableList:  true,
+			numericList: false,
+			want:        "● 1. test format 25 \"foo\" 1.245",
+		},
+		"narrow test with numeric listing": {
+			args: args{
+				format: "1. test format %d %q %v",
+				a:      []any{25, "foo", 1.245},
+			},
+			enableList:  true,
+			numericList: true,
+			want:        " 1. 1. test format 25 \"foo\" 1.245",
+		},
+		"nothing but newlines": {
+			args: args{
+				format: "\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+			},
+			want: "\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+		},
+		"nothing but terminal punctuation": {
+			args: args{
+				format: "!!?.!?.",
+			},
+			want: "!!?.!?.",
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			w := &bytes.Buffer{}
+			o := &bus{
+				errorWriter:        w,
+				performWrites:      true,
+				errorListDecorator: newListDecorator(false, false),
+			}
+			if tt.enableList {
+				o.BeginErrorList(tt.numericList)
+			}
+			o.ErrorPrintf(tt.args.format, tt.args.a...)
+			o.EndErrorList()
+			if got := w.String(); got != tt.want {
+				t.Errorf("bus.ErrorPrintf() got %q want %q", got, tt.want)
+			}
+		})
+	}
+}
+
 func Test_bus_WriteCanonicalError(t *testing.T) {
 	type args struct {
 		format string
@@ -196,6 +294,78 @@ func Test_bus_WriteCanonicalError(t *testing.T) {
 			if got := w.String(); got != tt.want {
 				t.Errorf("bus.WriteCanonicalError() got %q want %q", got, tt.want)
 			}
+		})
+	}
+}
+
+func Test_bus_ErrorPrintln(t *testing.T) {
+	tests := map[string]struct {
+		msg         string
+		enableList  bool
+		numericList bool
+		want        string
+	}{
+		"broad test": {
+			msg:         "test format 25 \"foo\" 1.245..?!..?\n\n\n\n",
+			enableList:  false,
+			numericList: false,
+			want:        "test format 25 \"foo\" 1.245..?!..?\n\n\n\n\n",
+		},
+		"broad test with bulleted list": {
+			msg:         "test format 25 \"foo\" 1.245..?!..?\n\n\n\n",
+			enableList:  true,
+			numericList: false,
+			want:        "● test format 25 \"foo\" 1.245..?!..?\n\n\n\n\n",
+		},
+		"broad test with numeric list": {
+			msg:         "test format 25 \"foo\" 1.245..?!..?\n\n\n\n",
+			enableList:  true,
+			numericList: true,
+			want:        " 1. test format 25 \"foo\" 1.245..?!..?\n\n\n\n\n",
+		},
+		"narrow test": {
+			msg:         "1. test format 25 \"foo\" 1.245",
+			enableList:  false,
+			numericList: false,
+			want:        "1. test format 25 \"foo\" 1.245\n",
+		},
+		"narrow test with bulleted list": {
+			msg:         "1. test format 25 \"foo\" 1.245",
+			enableList:  true,
+			numericList: false,
+			want:        "● 1. test format 25 \"foo\" 1.245\n",
+		},
+		"narrow test with numeric list": {
+			msg:         "1. test format 25 \"foo\" 1.245",
+			enableList:  true,
+			numericList: true,
+			want:        " 1. 1. test format 25 \"foo\" 1.245\n",
+		},
+		"nothing but newlines": {
+			msg:  "\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+			want: "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+		},
+		"nothing but terminal punctuation": {
+			msg:  "!!?.!?.",
+			want: "!!?.!?.\n",
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			w := &bytes.Buffer{}
+			o := &bus{
+				errorWriter:        w,
+				performWrites:      true,
+				errorListDecorator: newListDecorator(false, false),
+			}
+			if tt.enableList {
+				o.BeginErrorList(tt.numericList)
+			}
+			o.ErrorPrintln(tt.msg)
+			if got := w.String(); got != tt.want {
+				t.Errorf("bus.ErrorPrintln() got %q want %q", got, tt.want)
+			}
+			o.EndErrorList()
 		})
 	}
 }
@@ -298,6 +468,106 @@ func Test_bus_WriteError(t *testing.T) {
 	}
 }
 
+func Test_bus_ConsolePrintf(t *testing.T) {
+	type args struct {
+		format string
+		a      []any
+	}
+	tests := map[string]struct {
+		w           *bytes.Buffer
+		tab         uint8
+		enableList  bool
+		numericList bool
+		args
+		want string
+	}{
+		"strict rules": {
+			w:           &bytes.Buffer{},
+			tab:         0,
+			enableList:  false,
+			numericList: false,
+			args: args{
+				format: "test %s...\n\n",
+				a:      []any{"foo."},
+			},
+			want: "test foo....\n\n",
+		},
+		"strict rules with bulleted list": {
+			w:           &bytes.Buffer{},
+			tab:         0,
+			enableList:  true,
+			numericList: false,
+			args: args{
+				format: "test %s...\n\n",
+				a:      []any{"foo."},
+			},
+			want: "● test foo....\n\n",
+		},
+		"strict rules with numeric list": {
+			w:           &bytes.Buffer{},
+			tab:         0,
+			enableList:  true,
+			numericList: true,
+			args: args{
+				format: "test %s...\n\n",
+				a:      []any{"foo."},
+			},
+			want: " 1. test foo....\n\n",
+		},
+		"strict rules with tab": {
+			w:   &bytes.Buffer{},
+			tab: 10,
+			args: args{
+				format: "test %s...\n\n",
+				a:      []any{"foo."},
+			},
+			enableList:  false,
+			numericList: false,
+			want:        "          test foo....\n\n",
+		},
+		"strict rules with tab and bulleted list": {
+			w:   &bytes.Buffer{},
+			tab: 10,
+			args: args{
+				format: "test %s...\n\n",
+				a:      []any{"foo."},
+			},
+			enableList:  true,
+			numericList: false,
+			want:        "          ● test foo....\n\n",
+		},
+		"strict rules with tab and numeric list": {
+			w:   &bytes.Buffer{},
+			tab: 10,
+			args: args{
+				format: "test %s...\n\n",
+				a:      []any{"foo."},
+			},
+			enableList:  true,
+			numericList: true,
+			want:        "           1. test foo....\n\n",
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			o := &bus{
+				consoleWriter:        tt.w,
+				performWrites:        true,
+				tab:                  tt.tab,
+				consoleListDecorator: newListDecorator(false, false),
+			}
+			if tt.enableList {
+				o.BeginConsoleList(tt.numericList)
+			}
+			o.ConsolePrintf(tt.args.format, tt.args.a...)
+			if got := tt.w.String(); got != tt.want {
+				t.Errorf("bus.ConsolePrintf() got %q want %q", got, tt.want)
+			}
+			o.EndConsoleList()
+		})
+	}
+}
+
 func Test_bus_WriteCanonicalConsole(t *testing.T) {
 	type args struct {
 		format string
@@ -392,6 +662,84 @@ func Test_bus_WriteCanonicalConsole(t *testing.T) {
 			o.WriteCanonicalConsole(tt.args.format, tt.args.a...)
 			if got := tt.w.String(); got != tt.want {
 				t.Errorf("bus.WriteCanonicalConsole() got %q want %q", got, tt.want)
+			}
+			o.EndConsoleList()
+		})
+	}
+}
+
+func Test_bus_ConsolePrintln(t *testing.T) {
+	tests := map[string]struct {
+		w           *bytes.Buffer
+		tab         uint8
+		msg         string
+		enableList  bool
+		numericList bool
+		want        string
+	}{
+		"lax rules": {
+			w:           &bytes.Buffer{},
+			tab:         0,
+			msg:         "test foo....\n",
+			enableList:  false,
+			numericList: false,
+			want:        "test foo....\n\n",
+		},
+		"lax rules with bulleted list": {
+			w:           &bytes.Buffer{},
+			tab:         0,
+			msg:         "test foo....\n",
+			enableList:  true,
+			numericList: false,
+			want:        "● test foo....\n\n",
+		},
+		"lax rules with numeric list": {
+			w:           &bytes.Buffer{},
+			tab:         0,
+			msg:         "test foo....\n",
+			enableList:  true,
+			numericList: true,
+			want:        " 1. test foo....\n\n",
+		},
+		"lax rules with non-zero tab": {
+			w:           &bytes.Buffer{},
+			tab:         5,
+			msg:         "test foo....\n",
+			enableList:  false,
+			numericList: false,
+			want:        "     test foo....\n\n",
+		},
+		"lax rules with non-zero tab and bulleted list": {
+			w:           &bytes.Buffer{},
+			tab:         5,
+			msg:         "test foo....\n",
+			enableList:  true,
+			numericList: false,
+			want:        "     ● test foo....\n\n",
+		},
+		"lax rules with non-zero tab and numeric list": {
+			w:           &bytes.Buffer{},
+			tab:         5,
+			msg:         "test foo....\n",
+			enableList:  true,
+			numericList: true,
+			want:        "      1. test foo....\n\n",
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			o := &bus{
+				consoleWriter:        tt.w,
+				performWrites:        true,
+				tab:                  tt.tab,
+				consoleListDecorator: newListDecorator(false, false),
+			}
+			if tt.enableList {
+				o.BeginConsoleList(tt.numericList)
+			}
+			o.ConsolePrintln(tt.msg)
+			if got := tt.w.String(); got != tt.want {
+				t.Errorf("bus.ConsolePrintln() got %q want %q", got, tt.want)
 			}
 			o.EndConsoleList()
 		})

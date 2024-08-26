@@ -19,9 +19,13 @@ type (
 	// secondary use is to make it easy to test output writing.
 	Bus interface {
 		Log(Level, string, map[string]any)
+		// Deprecated: use ConsolePrintf or ConsolePrintln
 		WriteCanonicalConsole(string, ...any)
+		// Deprecated: use ConsolePrintf or ConsolePrintln
 		WriteConsole(string, ...any)
+		// Deprecated: use ErrorPrintf or ErrorPrintln
 		WriteCanonicalError(string, ...any)
+		// Deprecated: use ErrorPrintf or ErrorPrintln
 		WriteError(string, ...any)
 		ConsoleWriter() io.Writer
 		ErrorWriter() io.Writer
@@ -39,6 +43,10 @@ type (
 		BeginErrorList(bool)
 		EndErrorList()
 		ErrorListDecorator() *ListDecorator
+		ConsolePrintf(string, ...any)
+		ConsolePrintln(string)
+		ErrorPrintf(string, ...any)
+		ErrorPrintln(string)
 	}
 
 	// Logger defines a set of functions for writing to a log at various log
@@ -150,6 +158,50 @@ func (b *bus) ConsoleWriter() io.Writer {
 // ErrorWriter returns a writer for error output.
 func (b *bus) ErrorWriter() io.Writer {
 	return b.errorWriter
+}
+
+// ErrorPrintln prints a message to the error channel, terminated by a newline
+func (b *bus) ErrorPrintln(msg string) {
+	if b.performWrites {
+		doPrintln(b.errorWriter, b.errorListDecorator, msg)
+	}
+}
+
+// ErrorPrintf prints a message with arguments to the error channel
+func (b *bus) ErrorPrintf(format string, args ...any) {
+	if b.performWrites {
+		doPrintf(b.errorWriter, b.errorListDecorator, format, args...)
+	}
+}
+
+// ConsolePrintln prints a message to the error channel, terminated by a newline
+func (b *bus) ConsolePrintln(msg string) {
+	if b.performWrites {
+		writeTabbedContent(b.consoleWriter, b.tab, doSprintln(b.consoleListDecorator, msg))
+	}
+}
+
+// ConsolePrintf prints a message with arguments to the error channel
+func (b *bus) ConsolePrintf(format string, args ...any) {
+	if b.performWrites {
+		writeTabbedContent(b.consoleWriter, b.tab, doSprintf(b.consoleListDecorator, format, args...))
+	}
+}
+
+func doPrintf(w io.Writer, decorator *ListDecorator, format string, args ...any) {
+	_, _ = fmt.Fprint(w, doSprintf(decorator, format, args...))
+}
+
+func doSprintf(decorator *ListDecorator, format string, args ...any) string {
+	return fmt.Sprintf("%s%s", decorator.Decorator(), fmt.Sprintf(format, args...))
+}
+
+func doPrintln(w io.Writer, decorator *ListDecorator, msg string) {
+	_, _ = fmt.Fprint(w, doSprintln(decorator, msg))
+}
+
+func doSprintln(decorator *ListDecorator, msg string) string {
+	return fmt.Sprintf("%s%s\n", decorator.Decorator(), msg)
 }
 
 // WriteCanonicalError writes error output in a canonical format.
