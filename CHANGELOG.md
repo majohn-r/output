@@ -11,6 +11,17 @@ Key to symbols
 - 😒 change is invisible to the user
 - 🆕 new feature
 
+## v0.9.0
+
+_release `2024-08-27`_
+
+- ❗remove `Bus` interface functions
+
+    - `WriteCanonicalConsole(string, ...any)`
+    - `WriteCanonicalError(string, ...any)`
+    - `WriteConsole(string, ...any)`
+    - `WriteError(string, ...any)`
+
 ## v0.8.0
 
 _release `2024-08-26`_

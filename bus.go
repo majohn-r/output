@@ -12,24 +12,27 @@ type (
 	// Level is used to specify log levels for Bus.Log().
 	Level uint32
 
-	// Bus defines a set of functions for writing console messages and error
-	// messages, and for providing access to the console writer, the error
-	// writer, and a Logger instance; its primary use is to simplify how
-	// application code handles console, error, and logged output, and its
-	// secondary use is to make it easy to test output writing.
+	// Bus defines a set of functions for writing console messages and error messages, and for providing access to the
+	// console writer and the error writer, and a Logger instance; its primary use is to simplify how application code
+	// handles console, error, and logged output, and its secondary use is to make it easy to test output writing.
 	Bus interface {
+		// Log logs a message and map of fields at a specified log level.
 		Log(Level, string, map[string]any)
-		// Deprecated: use ConsolePrintf or ConsolePrintln
-		WriteCanonicalConsole(string, ...any)
-		// Deprecated: use ConsolePrintf or ConsolePrintln
-		WriteConsole(string, ...any)
-		// Deprecated: use ErrorPrintf or ErrorPrintln
-		WriteCanonicalError(string, ...any)
-		// Deprecated: use ErrorPrintf or ErrorPrintln
-		WriteError(string, ...any)
+		// ConsolePrintf prints a message with arguments to the error channel
+		ConsolePrintf(string, ...any)
+		// ConsolePrintln prints a message to the error channel, terminated by a newline
+		ConsolePrintln(string)
+		// ErrorPrintf prints a message with arguments to the error channel
+		ErrorPrintf(string, ...any)
+		// ErrorPrintln prints a message to the error channel, terminated by a newline
+		ErrorPrintln(string)
+		// ConsoleWriter returns a writer for console output.
 		ConsoleWriter() io.Writer
+		// ErrorWriter returns a writer for error output.
 		ErrorWriter() io.Writer
+		// IsConsoleTTY returns whether the console writer is a TTY
 		IsConsoleTTY() bool
+		// IsErrorTTY returns whether the error writer is a TTY
 		IsErrorTTY() bool
 		// Tab returns the current tab setting (number of spaces)
 		Tab() uint8
@@ -37,20 +40,21 @@ type (
 		IncrementTab(uint8)
 		// DecrementTab decreases the current tab setting; will not go below 0
 		DecrementTab(uint8)
+		// BeginConsoleList initiates console listing
 		BeginConsoleList(bool)
+		// EndConsoleList terminates console listing
 		EndConsoleList()
+		// ConsoleListDecorator makes the console list decorator available
 		ConsoleListDecorator() *ListDecorator
+		// BeginErrorList initiates error listing
 		BeginErrorList(bool)
+		// EndErrorList terminates error listing
 		EndErrorList()
+		// ErrorListDecorator makes the error list decorator available
 		ErrorListDecorator() *ListDecorator
-		ConsolePrintf(string, ...any)
-		ConsolePrintln(string)
-		ErrorPrintf(string, ...any)
-		ErrorPrintln(string)
 	}
 
-	// Logger defines a set of functions for writing to a log at various log
-	// levels
+	// Logger defines a set of functions for writing to a log at various log levels
 	Logger interface {
 		Trace(msg string, fields map[string]any)
 		Debug(msg string, fields map[string]any)
@@ -85,8 +89,7 @@ const (
 	Trace
 )
 
-// NewDefaultBus returns an implementation of Bus that writes console messages
-// to stdout and error messages to stderr.
+// NewDefaultBus returns an implementation of Bus that writes console messages to stdout and error messages to stderr.
 func NewDefaultBus(l Logger) Bus {
 	return NewCustomBus(os.Stdout, os.Stderr, l)
 }
@@ -105,8 +108,8 @@ func isTTY(w io.Writer) (b bool) {
 	return
 }
 
-// NewCustomBus returns an implementation of Bus that lets the caller specify
-// the console and error writers and the Logger.
+// NewCustomBus returns an implementation of Bus that lets the caller specify the console and error writers and the
+// Logger.
 func NewCustomBus(c, e io.Writer, l Logger) Bus {
 	return &bus{
 		consoleWriter:        c,
@@ -140,8 +143,8 @@ func (b *bus) Log(l Level, msg string, args map[string]any) {
 		case Fatal:
 			b.logger.Fatal(msg, args)
 		default:
-			b.WriteCanonicalError(
-				"programming error: call to bus.Log() with invalid level value %d; message: '%s', args: '%v",
+			b.ErrorPrintf(
+				"Programming error: call to bus.Log() with invalid level value %d; message: '%s', args: '%v'.\n",
 				l,
 				msg,
 				args,
@@ -202,34 +205,6 @@ func doPrintln(w io.Writer, decorator *ListDecorator, msg string) {
 
 func doSprintln(decorator *ListDecorator, msg string) string {
 	return fmt.Sprintf("%s%s\n", decorator.Decorator(), msg)
-}
-
-// WriteCanonicalError writes error output in a canonical format.
-func (b *bus) WriteCanonicalError(format string, a ...any) {
-	if b.performWrites {
-		_, _ = fmt.Fprint(b.errorWriter, b.errorListDecorator.Decorator()+canonicalFormat(format, a...))
-	}
-}
-
-// WriteError writes unedited error output.
-func (b *bus) WriteError(format string, a ...any) {
-	if b.performWrites {
-		fmt.Fprintf(b.errorWriter, b.errorListDecorator.Decorator()+format, a...)
-	}
-}
-
-// WriteCanonicalConsole writes output to a console in a canonical format.
-func (b *bus) WriteCanonicalConsole(format string, a ...any) {
-	if b.performWrites {
-		writeTabbedContent(b.consoleWriter, b.tab, b.consoleListDecorator.Decorator()+canonicalFormat(format, a...))
-	}
-}
-
-// WriteConsole writes output to a console.
-func (b *bus) WriteConsole(format string, a ...any) {
-	if b.performWrites {
-		writeTabbedContent(b.consoleWriter, b.tab, fmt.Sprintf(b.consoleListDecorator.Decorator()+format, a...))
-	}
 }
 
 func writeTabbedContent(w io.Writer, tab uint8, content string) {

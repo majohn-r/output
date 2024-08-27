@@ -85,8 +85,8 @@ func (r *Recorder) Log(l Level, msg string, fields map[string]any) {
 	case Fatal:
 		r.logger.Fatal(msg, fields)
 	default:
-		r.WriteCanonicalError(
-			"programming error: call to Recorder.Log() with invalid level value %d; message: '%s', args: '%v",
+		r.ErrorPrintf(
+			"Programming error: call to Recorder.Log() with invalid level value %d; message: '%s', args: '%v'.\n",
 			l,
 			msg,
 			fields,
@@ -122,26 +122,6 @@ func (r *Recorder) ConsolePrintln(msg string) {
 // ConsolePrintf prints a message with arguments to the error channel
 func (r *Recorder) ConsolePrintf(format string, args ...any) {
 	writeTabbedContent(r.consoleWriter, r.tab, doSprintf(r.consoleListDecorator, format, args...))
-}
-
-// WriteCanonicalError records data written as an error.
-func (r *Recorder) WriteCanonicalError(format string, a ...any) {
-	_, _ = fmt.Fprint(r.errorWriter, r.errorListDecorator.Decorator()+canonicalFormat(format, a...))
-}
-
-// WriteError records un-edited data written as an error.
-func (r *Recorder) WriteError(format string, a ...any) {
-	fmt.Fprintf(r.errorWriter, r.errorListDecorator.Decorator()+format, a...)
-}
-
-// WriteCanonicalConsole records data written to the console.
-func (r *Recorder) WriteCanonicalConsole(format string, a ...any) {
-	writeTabbedContent(r.consoleWriter, r.tab, r.consoleListDecorator.Decorator()+canonicalFormat(format, a...))
-}
-
-// WriteConsole records data written to the console.
-func (r *Recorder) WriteConsole(format string, a ...any) {
-	writeTabbedContent(r.consoleWriter, r.tab, fmt.Sprintf(r.consoleListDecorator.Decorator()+format, a...))
 }
 
 // IncrementTab increments the tab setting by the specified number of spaces

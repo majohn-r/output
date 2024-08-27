@@ -12,7 +12,6 @@
 - [output](#output)
   - [Installing](#installing)
   - [Basic Usage](#basic-usage)
-  - [Canonical Output](#canonical-output)
   - [Documentation](#documentation)
   - [Contributing](#contributing)
     - [Git](#git)
@@ -50,7 +49,7 @@ func main() {
 func runProgramLogic(o output.Bus, args []string) {
     // any functions called should have the Bus passed in if they, or any
     // function they call, needs to write output or do any logging
-    o.WriteConsole("hello world: %v\n", args)
+    o.ConsolePrintf("hello world: %v\n", args)
 }
 
 type ProductionLogger struct {}
@@ -120,43 +119,6 @@ func Test_runProgramLogic {
     }
 }
 ```
-
-## Canonical Output
-
-**NOTE: THIS SECTION DESCRIBES DEPRECATED CODE**
-
-Long ago, I was taught that messages intended to be read by users should have a
-number of features, among them _clarity_. One way to achieve clarity is to
-output messages as properly written sentences. In that vein, then, the **Bus**
-interfaces includes these functions:
-
-- WriteCanonicalConsole(string, ...any)
-- WriteConsole(string, ...any)
-- WriteCanonicalError(string, ...any)
-- WriteError(string, ...any)
-
-All use _fmt.Printf_ to process the format string and arguments, but the
-**Canonical** variants do a little extra processing on the result:
-
-1. Remove all trailing newlines.
-2. Remove redundant end-of-sentence punctuation characters (_period_,
-   _exclamation point_, and _question mark_), leaving only the last occurring
-   such character. Append a period if there was no end-of-sentence punctuation
-   character in the first place. This alleviates problems where the last value
-   in the field of arguments ends with an end-of-sentence punctuation character,
-   and so does the format string; this phase also ensures that the message ends
-   with appropriate punctuation.
-3. Capitalize the first character in the message.
-4. Append a newline.
-
-The result is, one hopes, a well-formed English sentence, starting with a
-capital letter and ending in exactly one end-of-sentence punctuation character
-and a newline. _The content between the first character and the final
-punctuation is the caller's problem._ If English grammar is not your strong
-suit, enlist a code reviewer who has the requisite skill set.
-
-Depending on context, I use a mix of **WriteConsole** and
-**WriteCanonicalConsole** - but I only use **WriteCanonicalError**.
 
 ## Documentation
 

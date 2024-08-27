@@ -6,19 +6,12 @@ import (
 )
 
 func TestNewNilBus(t *testing.T) {
-	tests := map[string]struct{}{
-		"simple test": {},
-	}
-	for name := range tests {
-		t.Run(name, func(t *testing.T) {
-			o := output.NewNilBus()
-			// none of these calls do anything ... here for pedantic test coverage
-			o.WriteCanonicalConsole("%s %d %t", "foo", 42, true)
-			o.WriteConsole("%s %d %t", "foo", 42, true)
-			o.WriteCanonicalError("%s %d %t", "foo", 42, true)
-			o.WriteError("%s %d %t", "foo", 42, true)
-		})
-	}
+	t.Run("basic check", func(t *testing.T) {
+		o := output.NewNilBus()
+		if o == nil {
+			t.Error("NewNilBus() should not return nil")
+		}
+	})
 }
 
 func TestNilWriter_Write(t *testing.T) {
