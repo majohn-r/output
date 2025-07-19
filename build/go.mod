@@ -7,7 +7,7 @@ toolchain go1.24.0
 require (
 	github.com/goyek/goyek/v2 v2.3.0
 	github.com/goyek/x v0.3.0
-	github.com/majohn-r/tools-build v0.13.0
+	github.com/majohn-r/tools-build v0.13.1
 )
 
 require (
