@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 type (
@@ -199,15 +201,15 @@ func (r *Recorder) IsErrorTTY() bool {
 func (r *Recorder) Verify(w WantedRecording) (differences []string, verified bool) {
 	verified = true
 	if got := r.ConsoleOutput(); got != w.Console {
-		differences = append(differences, fmt.Sprintf("console output = %q, want %q", got, w.Console))
+		differences = append(differences, fmt.Sprintf("console output = %s", cmp.Diff(w.Console, got)))
 		verified = false
 	}
 	if got := r.ErrorOutput(); got != w.Error {
-		differences = append(differences, fmt.Sprintf("error output = %q, want %q", got, w.Error))
+		differences = append(differences, fmt.Sprintf("error output = %s", cmp.Diff(w.Error, got)))
 		verified = false
 	}
 	if got := r.LogOutput(); got != w.Log {
-		differences = append(differences, fmt.Sprintf("log output = %q, want %q", got, w.Log))
+		differences = append(differences, fmt.Sprintf("log output = %s", cmp.Diff(w.Log, got)))
 		verified = false
 	}
 	return

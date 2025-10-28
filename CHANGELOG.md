@@ -11,27 +11,34 @@ Key to symbols
 - 😒 change is invisible to the user
 - 🆕 new feature
 
+## v0.10.0
+
+_release `2025-10-28`_
+
+- 🐛🆕 fixed [Issue 26](https://github.com/majohn-r/output/issues/26) using `go-cmp`'s `Diff` function in reporting 
+console, error, and log differences
+
 ## v0.9.4
 
-_ release `2025-10-09`_
+_release `2025-10-09`_
 
 - 😒 updated build dependencies
 
 ## v0.9.3
 
-_ release `2025-08-29`_
+_release `2025-08-29`_
 
 - 😒 updated build dependencies
 
 ## v0.9.2
 
-_ release `2025-07-19`_
+_release `2025-07-19`_
 
 - 😒 updated build dependencies
 
 ## v0.9.1
 
-_ release `2025-07-19`_
+_release `2025-07-19`_
 
 - 😒 updated build and code dependencies
 

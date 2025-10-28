@@ -2,10 +2,12 @@ package output_test
 
 import (
 	"fmt"
-	"github.com/majohn-r/output"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/majohn-r/output"
 )
 
 func TestNewRecorderPrinting(t *testing.T) {
@@ -284,9 +286,18 @@ func TestRecorder_Verify(t *testing.T) {
 				},
 			},
 			wantDifferences: []string{
-				"console output = \"\", want \"unexpected console output\"",
-				"error output = \"\", want \"unexpected error output\"",
-				"log output = \"\", want \"unexpected log output\"",
+				"console output = \u00a0\u00a0string(\n" +
+					"-\u00a0\t\"unexpected console output\",\n" +
+					"+\u00a0\t\"\",\n" +
+					"\u00a0\u00a0)\n",
+				"error output = \u00a0\u00a0string(\n" +
+					"-\u00a0\t\"unexpected error output\",\n" +
+					"+\u00a0\t\"\",\n" +
+					"\u00a0\u00a0)\n",
+				"log output = \u00a0\u00a0string(\n" +
+					"-\u00a0\t\"unexpected log output\",\n" +
+					"+\u00a0\t\"\",\n" +
+					"\u00a0\u00a0)\n",
 			},
 		},
 	}
@@ -294,7 +305,7 @@ func TestRecorder_Verify(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			gotDifferences, gotVerified := tt.args.o.Verify(tt.args.w)
 			if !reflect.DeepEqual(gotDifferences, tt.wantDifferences) {
-				t.Errorf("Recorder.Verify() gotIssues = %v, want %v", gotDifferences, tt.wantDifferences)
+				t.Errorf("Recorder.Verify() gotIssues = %s", cmp.Diff(tt.wantDifferences, gotDifferences))
 			}
 			if gotVerified != tt.wantVerified {
 				t.Errorf("Recorder.Verify() gotVerified = %v, want %v", gotVerified, tt.wantVerified)
