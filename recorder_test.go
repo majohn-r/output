@@ -304,9 +304,6 @@ func TestRecorder_Verify(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			gotDifferences, gotVerified := tt.args.o.Verify(tt.args.w)
-			for k := range tt.wantDifferences {
-				strings.ReplaceAll(gotDifferences[k], "\u00a0", " ")
-			}
 			if !reflect.DeepEqual(gotDifferences, tt.wantDifferences) {
 				t.Errorf("Recorder.Verify() gotIssues = %s", cmp.Diff(tt.wantDifferences, gotDifferences))
 			}

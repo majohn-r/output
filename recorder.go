@@ -196,20 +196,30 @@ func (r *Recorder) IsErrorTTY() bool {
 	return false
 }
 
+func cleanseNBSPs(s string) string {
+	return strings.ReplaceAll(s, "\u00a0", " ")
+}
+
 // Verify verifies the recorded output against the expected output and returns
 // any differences found.
 func (r *Recorder) Verify(w WantedRecording) (differences []string, verified bool) {
 	verified = true
-	if got := r.ConsoleOutput(); got != w.Console {
-		differences = append(differences, fmt.Sprintf("console output = %s", cmp.Diff(w.Console, got)))
+	rCon := cleanseNBSPs(r.ConsoleOutput())
+	wCon := cleanseNBSPs(w.Console)
+	if got := rCon; got != wCon {
+		differences = append(differences, fmt.Sprintf("console output = %s", cmp.Diff(wCon, got)))
 		verified = false
 	}
-	if got := r.ErrorOutput(); got != w.Error {
-		differences = append(differences, fmt.Sprintf("error output = %s", cmp.Diff(w.Error, got)))
+	rErr := cleanseNBSPs(r.ErrorOutput())
+	wErr := cleanseNBSPs(w.Error)
+	if got := rErr; got != wErr {
+		differences = append(differences, fmt.Sprintf("error output = %s", cmp.Diff(wErr, got)))
 		verified = false
 	}
-	if got := r.LogOutput(); got != w.Log {
-		differences = append(differences, fmt.Sprintf("log output = %s", cmp.Diff(w.Log, got)))
+	rLog := cleanseNBSPs(r.LogOutput())
+	wLog := cleanseNBSPs(w.Log)
+	if got := rLog; got != wLog {
+		differences = append(differences, fmt.Sprintf("log output = %s", cmp.Diff(wLog, got)))
 		verified = false
 	}
 	return
