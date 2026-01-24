@@ -286,24 +286,27 @@ func TestRecorder_Verify(t *testing.T) {
 				},
 			},
 			wantDifferences: []string{
-				"console output =   string(\n" +
-					"- \t\"unexpected console output\",\n" +
-					"+ \t\"\",\n" +
-					"  )\n",
-				"error output =   string(\n" +
-					"- \t\"unexpected error output\",\n" +
-					"+ \t\"\",\n" +
-					"  )\n",
-				"log output =   string(\n" +
-					"- \t\"unexpected log output\",\n" +
-					"+ \t\"\",\n" +
-					"  )\n",
+				"console output =   string(\n" +
+					"- \t\"unexpected console output\",\n" +
+					"+ \t\"\",\n" +
+					"  )\n",
+				"error output =   string(\n" +
+					"- \t\"unexpected error output\",\n" +
+					"+ \t\"\",\n" +
+					"  )\n",
+				"log output =   string(\n" +
+					"- \t\"unexpected log output\",\n" +
+					"+ \t\"\",\n" +
+					"  )\n",
 			},
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			gotDifferences, gotVerified := tt.args.o.Verify(tt.args.w)
+			for k := range tt.wantDifferences {
+				strings.ReplaceAll(gotDifferences[k], "\u00a0", " ")
+			}
 			if !reflect.DeepEqual(gotDifferences, tt.wantDifferences) {
 				t.Errorf("Recorder.Verify() gotIssues = %s", cmp.Diff(tt.wantDifferences, gotDifferences))
 			}
