@@ -286,18 +286,18 @@ func TestRecorder_Verify(t *testing.T) {
 				},
 			},
 			wantDifferences: []string{
-				"console output = \u00a0\u00a0string(\n" +
-					"-\u00a0\t\"unexpected console output\",\n" +
-					"+\u00a0\t\"\",\n" +
-					"\u00a0\u00a0)\n",
-				"error output = \u00a0\u00a0string(\n" +
-					"-\u00a0\t\"unexpected error output\",\n" +
-					"+\u00a0\t\"\",\n" +
-					"\u00a0\u00a0)\n",
-				"log output = \u00a0\u00a0string(\n" +
-					"-\u00a0\t\"unexpected log output\",\n" +
-					"+\u00a0\t\"\",\n" +
-					"\u00a0\u00a0)\n",
+				"console output =   string(\n" +
+					"- \t\"unexpected console output\",\n" +
+					"+ \t\"\",\n" +
+					"  )\n",
+				"error output =   string(\n" +
+					"- \t\"unexpected error output\",\n" +
+					"+ \t\"\",\n" +
+					"  )\n",
+				"log output =   string(\n" +
+					"- \t\"unexpected log output\",\n" +
+					"+ \t\"\",\n" +
+					"  )\n",
 			},
 		},
 	}
