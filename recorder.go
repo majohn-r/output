@@ -173,17 +173,17 @@ func (r *Recorder) ErrorListDecorator() *ListDecorator {
 
 // ConsoleOutput returns the data written as console output.
 func (r *Recorder) ConsoleOutput() string {
-	return r.consoleWriter.String()
+	return cleanseNBSPs(r.consoleWriter.String())
 }
 
 // ErrorOutput returns the data written as error output.
 func (r *Recorder) ErrorOutput() string {
-	return r.errorWriter.String()
+	return cleanseNBSPs(r.errorWriter.String())
 }
 
 // LogOutput returns the data written to a log.
 func (r *Recorder) LogOutput() string {
-	return r.logger.writer.String()
+	return cleanseNBSPs(r.logger.writer.String())
 }
 
 // IsConsoleTTY returns whether the console writer is a TTY
@@ -204,22 +204,19 @@ func cleanseNBSPs(s string) string {
 // any differences found.
 func (r *Recorder) Verify(w WantedRecording) (differences []string, verified bool) {
 	verified = true
-	rCon := cleanseNBSPs(r.ConsoleOutput())
 	wCon := cleanseNBSPs(w.Console)
-	if got := rCon; got != wCon {
-		differences = append(differences, fmt.Sprintf("console output = %s", cmp.Diff(wCon, got)))
+	if got := r.ConsoleOutput(); got != wCon {
+		differences = append(differences, fmt.Sprintf("console output = %s", cleanseNBSPs(cmp.Diff(wCon, got))))
 		verified = false
 	}
-	rErr := cleanseNBSPs(r.ErrorOutput())
 	wErr := cleanseNBSPs(w.Error)
-	if got := rErr; got != wErr {
-		differences = append(differences, fmt.Sprintf("error output = %s", cmp.Diff(wErr, got)))
+	if got := r.ErrorOutput(); got != wErr {
+		differences = append(differences, fmt.Sprintf("error output = %s", cleanseNBSPs(cmp.Diff(wErr, got))))
 		verified = false
 	}
-	rLog := cleanseNBSPs(r.LogOutput())
 	wLog := cleanseNBSPs(w.Log)
-	if got := rLog; got != wLog {
-		differences = append(differences, fmt.Sprintf("log output = %s", cmp.Diff(wLog, got)))
+	if got := r.LogOutput(); got != wLog {
+		differences = append(differences, fmt.Sprintf("log output = %s", cleanseNBSPs(cmp.Diff(wLog, got))))
 		verified = false
 	}
 	return
