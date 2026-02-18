@@ -5,7 +5,7 @@ go 1.26
 require (
 	github.com/goyek/goyek/v3 v3.0.1
 	github.com/goyek/x v0.4.0
-	github.com/majohn-r/tools-build v0.14.1
+	github.com/majohn-r/tools-build v0.14.2
 )
 
 require (
