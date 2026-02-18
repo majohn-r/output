@@ -319,8 +319,8 @@ func TestRecorder_Verify(t *testing.T) {
 				}
 			}
 		})
-		tType := reflect.TypeOf(t)
-		interfaceType := reflect.TypeOf((*output.TestingReporter)(nil)).Elem()
+		tType := reflect.TypeFor[*testing.T]()
+		interfaceType := reflect.TypeFor[output.TestingReporter]()
 		if !tType.Implements(interfaceType) {
 			t.Errorf("Recorder.Verify() *testing.T does not implement TestingReporter")
 		}

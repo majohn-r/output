@@ -11,6 +11,12 @@ Key to symbols
 - 😒 change is invisible to the user
 - 🆕 new feature
 
+## v0.10.2
+
+_release `2026-02-17`_
+
+- 😒 update dependencies and accept a `go fix` change.
+
 ## v0.10.1
 
 _release `2026-01-24`_
