@@ -5,104 +5,127 @@ import (
 	build "github.com/majohn-r/tools-build"
 )
 
-const coverageFile = "coverage.out"
+const (
+	coverageFile           = "coverage.out"
+	taskClean              = "clean"
+	taskCoverage           = "coverage"
+	taskDeadCode           = "deadcode"
+	taskDoc                = "doc"
+	taskFix                = "fix"
+	taskFormat             = "format"
+	taskLint               = "lint"
+	taskNilAway            = "nilaway"
+	taskTests              = "tests"
+	taskUpdateDependencies = "updateDependencies"
+	taskVulnerabilityCheck = "vulnCheck"
+)
 
 var (
 	clean = goyek.Define(goyek.Task{
-		Name:  "clean",
+		Name:  taskClean,
 		Usage: "delete build products",
 		Action: func(a *goyek.A) {
-			if !build.TaskDisabled("clean") {
+			if !build.TaskDisabled(taskClean) {
 				build.Clean([]string{coverageFile})
 			}
 		},
 	})
 
 	_ = goyek.Define(goyek.Task{
-		Name:  "coverage",
+		Name:  taskCoverage,
 		Usage: "run unit tests and produce a coverage report",
 		Action: func(a *goyek.A) {
-			if !build.TaskDisabled("coverage") {
+			if !build.TaskDisabled(taskCoverage) {
 				build.GenerateCoverageReport(a, coverageFile)
 			}
 		},
 	})
 
 	_ = goyek.Define(goyek.Task{
-		Name:  "deadcode",
+		Name:  taskDeadCode,
 		Usage: "run deadcode analysis",
 		Action: func(a *goyek.A) {
-			if !build.TaskDisabled("deadcode") {
+			if !build.TaskDisabled(taskDeadCode) {
 				build.Deadcode(a)
 			}
 		},
 	})
 
 	_ = goyek.Define(goyek.Task{
-		Name:  "doc",
+		Name:  taskDoc,
 		Usage: "generate documentation",
 		Action: func(a *goyek.A) {
-			if !build.TaskDisabled("doc") {
+			if !build.TaskDisabled(taskDoc) {
 				build.GenerateDocumentation(a, []string{"build"})
 			}
 		},
 	})
 
+	_ = goyek.Define(goyek.Task{
+		Name:  taskFix,
+		Usage: "run go fix",
+		Action: func(a *goyek.A) {
+			if !build.TaskDisabled(taskFix) {
+				build.GoFix(a)
+			}
+		},
+	})
+
 	format = goyek.Define(goyek.Task{
-		Name:  "format",
+		Name:  taskFormat,
 		Usage: "clean up source code formatting",
 		Action: func(a *goyek.A) {
-			if !build.TaskDisabled("format") {
+			if !build.TaskDisabled(taskFormat) {
 				build.Format(a)
 			}
 		},
 	})
 
 	lint = goyek.Define(goyek.Task{
-		Name:  "lint",
+		Name:  taskLint,
 		Usage: "run the linter on source code",
 		Action: func(a *goyek.A) {
-			if !build.TaskDisabled("lint") {
+			if !build.TaskDisabled(taskLint) {
 				build.Lint(a)
 			}
 		},
 	})
 
 	nilaway = goyek.Define(goyek.Task{
-		Name:  "nilaway",
+		Name:  taskNilAway,
 		Usage: "run nilaway on source code",
 		Action: func(a *goyek.A) {
-			if !build.TaskDisabled("nilaway") {
+			if !build.TaskDisabled(taskNilAway) {
 				build.NilAway(a)
 			}
 		},
 	})
 
 	tests = goyek.Define(goyek.Task{
-		Name:  "tests",
+		Name:  taskTests,
 		Usage: "run unit tests",
 		Action: func(a *goyek.A) {
-			if !build.TaskDisabled("tests") {
+			if !build.TaskDisabled(taskTests) {
 				build.UnitTests(a)
 			}
 		},
 	})
 
 	updateDependencies = goyek.Define(goyek.Task{
-		Name:  "updateDependencies",
+		Name:  taskUpdateDependencies,
 		Usage: "update dependencies",
 		Action: func(a *goyek.A) {
-			if !build.TaskDisabled("updateDependencies") {
+			if !build.TaskDisabled(taskUpdateDependencies) {
 				build.UpdateDependencies(a)
 			}
 		},
 	})
 
 	vulnCheck = goyek.Define(goyek.Task{
-		Name:  "vulnCheck",
+		Name:  taskVulnerabilityCheck,
 		Usage: "run vulnerability check on source code",
 		Action: func(a *goyek.A) {
-			if !build.TaskDisabled("vulnCheck") {
+			if !build.TaskDisabled(taskVulnerabilityCheck) {
 				build.VulnerabilityCheck(a)
 			}
 		},
